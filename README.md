@@ -16,6 +16,11 @@ Copy `.env.example` to `.env.local` for direct local development or `.env` for
 Docker Compose. Add the Project URL and publishable key from the Supabase
 project **Connect** dialog.
 
+To enable AI-written search suggestions, set the server-only
+`OPENAI_API_KEY`. `OPENAI_SUGGESTION_MODEL` defaults to `gpt-5-mini`. Without
+an API key, the feature returns the same verified facts using a deterministic
+fallback. Never use a `NEXT_PUBLIC_` prefix for the OpenAI key.
+
 In Supabase **Authentication → URL Configuration**, set:
 
 - Site URL: `http://localhost:3000`
@@ -68,6 +73,20 @@ navigation an exchange partner will use.
 Authenticated members manage homes at `/dashboard/homes`. New homes begin as
 private drafts, photos upload directly to private Supabase Storage, and a home
 must have at least one photo before it can be published.
+
+## AI-written suggestions
+
+Signed-in members can choose **Why this suggestion?** on a search result. The
+server reloads the published home and compares it with the current destination,
+household size, and amenity filters before calling OpenAI. Only the minimum
+verified listing facts are sent; exact addresses, private messages, member
+profiles, and credentials are excluded.
+
+OpenAI writes a schema-constrained headline and up to three reasons. It does
+not select homes, determine reciprocal eligibility, rank candidates, or write
+to Supabase. Requests use `store: false`, and model failures automatically use
+the deterministic explanation. The route enforces a small per-instance member
+rate limit; a distributed deployment should replace it with a shared limiter.
 
 ## Database migrations
 

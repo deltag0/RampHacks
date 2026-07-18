@@ -1,8 +1,18 @@
 import Link from "next/link";
 import { Heart, MapPin } from "lucide-react";
 import type { Home } from "@/server/data/homes";
+import { HomeSuggestion } from "./home-suggestion";
 
-export function HomeCard({ home }: { home: Home }) {
+type HomeCardProps = {
+  home: Home;
+  suggestionSearch?: {
+    destination: string;
+    travelers: number;
+    amenities: string[];
+  };
+};
+
+export function HomeCard({ home, suggestionSearch }: HomeCardProps) {
   return (
     <article className="home-card">
       <div className="home-image-wrap">
@@ -29,6 +39,9 @@ export function HomeCard({ home }: { home: Home }) {
         <p>
           {home.type} · Sleeps {home.guests}
         </p>
+        {suggestionSearch ? (
+          <HomeSuggestion homeId={home.id} search={suggestionSearch} />
+        ) : null}
       </div>
     </article>
   );

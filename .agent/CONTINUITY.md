@@ -6,6 +6,7 @@
 - 2026-07-18T18:08:00Z [USER] Commit, validate through no-mistakes, and push the Kelvin showcase and date-filtering changes to `origin/swapp`.
 - 2026-07-18T18:02:00Z [USER] Explicitly authorized applying the Kelvin showcase migration and seed to the connected remote development project.
 - 2026-07-18T17:53:31Z [USER] Add fictional multi-country showcase homes owned by Kelvin with varied filter attributes, availability dates, and synthetic photos; keep remote writes read-only unless separately authorized.
+- 2026-07-18T17:52:01Z [USER] Create a separate worktree for OpenAI-generated member suggestions, distinct from deterministic personalized recommendations.
 - 2026-07-18T17:47:48Z [USER] Implement a production-quality authenticated home listing flow with real photo uploads and durable interactive tours.
 - 2026-07-18T17:40:00Z [USER] Merge the validated `user-management` feature branch into the local `swapp` integration branch; user explicitly waived the no-mistakes pipeline after its pre-run failure.
 - 2026-07-18T17:30:23Z [USER] Merge the interactive home-tour feature into the `swapp` branch.
@@ -20,6 +21,9 @@
 
 - 2026-07-18T17:53:31Z [CODE] Showcase data is an idempotent local/disposable-development seed that resolves exactly one active Kelvin by display name; it uses deterministic fictional region/home IDs and never embeds Kelvin's account ID.
 - 2026-07-18T17:53:31Z [CODE] Date search requires every supplied boundary to fall inside one home availability window; the shared pure filter is used by both the browser experience and homes API.
+- 2026-07-18T18:00:49Z [CODE] AI suggestions are authenticated, reload published home data server-side, send only verified approximate listing/filter facts with `store: false`, and fall back deterministically on missing credentials, refusals, invalid output, timeouts, or API errors.
+- 2026-07-18T17:52:01Z [ASSUMPTION] Keep OpenAI responsible for structured, plain-language suggestion explanations only; Supabase data and deterministic domain rules remain authoritative for eligibility and ranking.
+- 2026-07-18T17:52:01Z [ASSUMPTION] Store the OpenAI credential only in the server-side `OPENAI_API_KEY` environment variable and never in Git, `NEXT_PUBLIC_*`, Supabase rows, logs, or client responses.
 - 2026-07-18T17:47:48Z [CODE] Home and tour images upload directly from authenticated browsers to separate private Supabase buckets; database metadata and RLS bind every object path to the owning member and home.
 - 2026-07-18T17:47:48Z [CODE] Homes begin as drafts and require a photo before publication; tour graph replacement is a single owner-authorized database transaction with client cleanup on failure.
 - 2026-07-18T17:10:33Z [CODE] Added a local, unapplied Supabase migration for tours rather than mutating the connected remote project; remote writes require an explicit dry-run workflow.
@@ -38,6 +42,8 @@
 
 - 2026-07-18T18:02:00Z [TOOL] Ran the remote migration plus seed in a transaction that was rolled back, confirmed the dry run produced 6 homes and 8 windows, then applied `create_home_availability` and the idempotent seed to the connected hosted development project.
 - 2026-07-18T17:53:31Z [CODE] Added local availability schema/RLS, six fictional homes across Portugal, Japan, Canada, South Africa, Denmark, and Argentina, eight varied windows, shared date-aware filtering, detail-page availability display, regression tests, and README guidance.
+- 2026-07-18T18:00:49Z [CODE] Added the `/api/suggestions` Responses API adapter, strict output schema, filter-fact verifier, authenticated search-result UI, per-instance member rate limit, tests, environment configuration, and operational documentation.
+- 2026-07-18T17:52:01Z [TOOL] Created branch `ai-generated-suggestions` at worktree `/Users/termev/RampHacks-ai-generated-suggestions` from local `swapp` commit `df35cc3`.
 - 2026-07-18T17:47:48Z [CODE] Added authenticated create/edit/manage/publish home routes, validated photo uploads, owner dashboard navigation, and persisted tour loading/saving.
 - 2026-07-18T17:47:48Z [CODE] Added `home_photos`, private `home-images` Storage, publication enforcement, and transactional `replace_home_tour` in migration `20260718190000`.
 - 2026-07-18T17:40:00Z [TOOL] Began local `user-management` merge into `swapp`; conflicts preserve the established Supabase-backed discovery landing/styles while integrating auth-aware global navigation, user management, messaging, migrations, environment naming, and documentation.
@@ -65,6 +71,7 @@
 - 2026-07-18T17:53:31Z [TOOL] Read-only inspection confirmed exactly one active member named Kelvin and no regions/homes in the connected development project; no remote data or schema was changed.
 - 2026-07-18T17:53:31Z [TOOL] The built-in image generator failed with a network error; synthetic raster assets remain UNCONFIRMED because CLI fallback requires explicit user approval and an API key.
 - 2026-07-18T17:53:31Z [TOOL] Format, ESLint, strict TypeScript, 17 Vitest assertions, Next.js production build, and git diff whitespace checks pass; the first test run exposed and the final code fixed an expired-window match for open-ended date filters.
+- 2026-07-18T18:00:49Z [TOOL] Prettier, ESLint, strict TypeScript, 17 Vitest assertions, webpack production build, and `git diff --check` passed; default Turbopack build was blocked only because reused worktree dependencies were an external symlink, while Docker remained blocked by organization sign-in.
 - 2026-07-18T17:47:48Z [TOOL] Vitest (14 tests), ESLint, strict TypeScript, Next.js production build, Prettier, and `git diff --check` passed; new hosted migration remains unapplied by design.
 - 2026-07-18T17:42:00Z [TOOL] Resolved `user-management` integration passes Prettier, ESLint, strict TypeScript, 11 Vitest assertions, Next.js production build, `git diff --check`, and runtime smoke tests for discovery, auth, protected dashboard/messages redirects, and tour builder.
 - 2026-07-18T17:42:00Z [CODE] The established discovery landing page and styles remain canonical; global navigation now resolves the Supabase session and exposes login/join or messages/dashboard actions accordingly.
@@ -92,6 +99,7 @@
 
 - 2026-07-18T18:02:00Z [TOOL] SUPERSEDES the unapplied portion of the 2026-07-18T17:53:31Z outcome: availability schema, six Kelvin homes, and eight windows are now live in the connected hosted development project; generated photo objects and the separate photo migration remain unapplied.
 - 2026-07-18T17:53:31Z [CODE] Local code now supports an idempotent Kelvin showcase dataset and genuine date filtering; applying migrations/seed and adding generated photo objects remain intentionally unapplied pending a safe local database command and successful/approved image generation.
+- 2026-07-18T18:00:49Z [CODE] Signed-in members can request an AI-written explanation for a published search result without allowing OpenAI to choose eligibility/ranking or receive exact addresses, private messages, member profiles, or database write access.
 - 2026-07-18T17:47:48Z [CODE] Members can now create private home drafts, upload real photos, edit and publish eligible listings, and build durable owner-scoped interactive tours without routing image bytes through Next.js.
 - 2026-07-18T17:42:00Z [CODE] Local `swapp` now combines Supabase-backed discovery/details, interactive tour prototyping, authentication, member trust/history, and private exchange messaging; remote push and pending database migrations remain separate explicit actions.
 - 2026-07-18T17:30:23Z [CODE] The `swapp` tree now contains the interactive tour prototype and its unapplied Supabase persistence migration without regressing database-backed marketplace reads or home-detail behavior.

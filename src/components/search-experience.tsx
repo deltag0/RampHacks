@@ -228,7 +228,15 @@ export function SearchExperience({ initialHomes }: { initialHomes: Home[] }) {
         {filtered.length ? (
           <div className="card-grid results-grid">
             {filtered.map((home) => (
-              <HomeCard home={home} key={home.id} />
+              <HomeCard
+                home={home}
+                key={home.id}
+                suggestionSearch={{
+                  destination: filters.destination,
+                  travelers: filters.travelers,
+                  amenities: filters.amenities,
+                }}
+              />
             ))}
           </div>
         ) : (
