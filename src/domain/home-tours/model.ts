@@ -46,8 +46,7 @@ export function removeScene(tour: HomeTour, sceneId: string): HomeTour {
         : tour.startSceneId,
     connections: tour.connections.filter(
       (connection) =>
-        connection.fromSceneId !== sceneId &&
-        connection.toSceneId !== sceneId,
+        connection.fromSceneId !== sceneId && connection.toSceneId !== sceneId,
     ),
   };
 }

@@ -52,12 +52,9 @@ export function HomeTourBuilder() {
   const [announcement, setAnnouncement] = useState("");
   const objectUrls = useRef<string[]>([]);
 
-  const activeScene = tour.scenes.find(
-    (scene) => scene.id === activeSceneId,
-  );
+  const activeScene = tour.scenes.find((scene) => scene.id === activeSceneId);
   const outgoingConnections = useMemo(
-    () =>
-      activeSceneId ? connectionsFrom(tour, activeSceneId) : [],
+    () => (activeSceneId ? connectionsFrom(tour, activeSceneId) : []),
     [activeSceneId, tour],
   );
 
@@ -100,9 +97,7 @@ export function HomeTourBuilder() {
 
   function beginConnection() {
     if (!activeSceneId || tour.scenes.length < 2) return;
-    const destination = tour.scenes.find(
-      (scene) => scene.id !== activeSceneId,
-    );
+    const destination = tour.scenes.find((scene) => scene.id !== activeSceneId);
     if (!destination) return;
     setConnectionDraft({
       toSceneId: destination.id,
@@ -136,8 +131,7 @@ export function HomeTourBuilder() {
           id: crypto.randomUUID(),
           fromSceneId: activeSceneId,
           ...connectionDraft,
-          label:
-            connectionDraft.label.trim() || `Go to ${destination.name}`,
+          label: connectionDraft.label.trim() || `Go to ${destination.name}`,
         },
       ],
     }));
@@ -176,12 +170,7 @@ export function HomeTourBuilder() {
         <label className="button tour-upload">
           <Plus size={18} aria-hidden="true" />
           Add room images
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={addImages}
-          />
+          <input type="file" accept="image/*" multiple onChange={addImages} />
         </label>
         <p className="tour-privacy-note">
           Before uploading, remove location metadata and check that addresses,
@@ -228,11 +217,7 @@ export function HomeTourBuilder() {
                   onChange={addImages}
                 />
               </label>
-              <button
-                className="button"
-                type="button"
-                onClick={openPreview}
-              >
+              <button className="button" type="button" onClick={openPreview}>
                 <Eye size={17} />
                 Preview tour
               </button>
@@ -280,9 +265,7 @@ export function HomeTourBuilder() {
                       <small>Scene {index + 1}</small>
                       <strong>{scene.name}</strong>
                     </span>
-                    {tour.startSceneId === scene.id && (
-                      <em>Start</em>
-                    )}
+                    {tour.startSceneId === scene.id && <em>Start</em>}
                   </button>
                 </li>
               );
@@ -368,10 +351,7 @@ export function HomeTourBuilder() {
               >
                 {/* Session-only blob URLs cannot use the Next.js image optimizer. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={activeScene.imageUrl}
-                  alt={activeScene.imageAlt}
-                />
+                <img src={activeScene.imageUrl} alt={activeScene.imageAlt} />
                 {outgoingConnections.map((connection) => (
                   <button
                     key={connection.id}
@@ -429,7 +409,10 @@ export function HomeTourBuilder() {
                       (scene) => scene.id === connection.toSceneId,
                     );
                     return (
-                      <span className="tour-connection-chip" key={connection.id}>
+                      <span
+                        className="tour-connection-chip"
+                        key={connection.id}
+                      >
                         {destination?.name ?? "Unknown scene"}
                         <button
                           type="button"
@@ -511,9 +494,7 @@ export function HomeTourBuilder() {
                 value={connectionDraft.label}
                 onChange={(event) =>
                   setConnectionDraft((draft) =>
-                    draft
-                      ? { ...draft, label: event.target.value }
-                      : draft,
+                    draft ? { ...draft, label: event.target.value } : draft,
                   )
                 }
               />

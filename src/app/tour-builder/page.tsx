@@ -13,7 +13,7 @@ export default function TourBuilderPage() {
           accessible walk-through of your home.
         </p>
       </section>
-      <section className="container tour-builder-section">
+      <section className="tour-builder-section container">
         <HomeTourBuilder />
       </section>
     </main>

@@ -2,6 +2,7 @@
 
 [PLANS]
 
+- 2026-07-18T17:40:00Z [USER] Merge the validated `user-management` feature branch into the local `swapp` integration branch; user explicitly waived the no-mistakes pipeline after its pre-run failure.
 - 2026-07-18T17:30:23Z [USER] Merge the interactive home-tour feature into the `swapp` branch.
 - 2026-07-18T17:10:33Z [USER] Verify the tour feature against the updated Supabase schema and replace placeholder actions with correctly authorized database operations.
 - 2026-07-18T16:18:52Z [USER] Build a house-swapping platform that reciprocally matches people seeking travel in each other's countries or regions.
@@ -26,6 +27,7 @@
 
 [PROGRESS]
 
+- 2026-07-18T17:40:00Z [TOOL] Began local `user-management` merge into `swapp`; conflicts preserve the established Supabase-backed discovery landing/styles while integrating auth-aware global navigation, user management, messaging, migrations, environment naming, and documentation.
 - 2026-07-18T17:30:23Z [TOOL] Merged commit `1fdd6ed` from `interactive-home-tour` into `swapp`; conflicts preserved the newer Supabase discovery/detail implementation while adding the tour route, graph model, styles, navigation, documentation, and local migration.
 - 2026-07-18T17:32:48Z [TOOL] Verified `origin/supabase-data-integration` is an ancestor of local `swapp` and pushed combined commit `e8d6a63` to `origin/swapp` without force-pushing or changing either feature branch.
 - 2026-07-18T17:10:33Z [CODE] Added `home_tours`, `home_tour_scenes`, `home_tour_connections`, same-tour foreign-key invariants, owner/published RLS policies, and a constrained private `home-tour-images` bucket migration.
@@ -46,6 +48,8 @@
 
 [DISCOVERIES]
 
+- 2026-07-18T17:42:00Z [TOOL] Resolved `user-management` integration passes Prettier, ESLint, strict TypeScript, 11 Vitest assertions, Next.js production build, `git diff --check`, and runtime smoke tests for discovery, auth, protected dashboard/messages redirects, and tour builder.
+- 2026-07-18T17:42:00Z [CODE] The established discovery landing page and styles remain canonical; global navigation now resolves the Supabase session and exposes login/join or messages/dashboard actions accordingly.
 - 2026-07-18T17:30:23Z [TOOL] Resolved merge passed ESLint with two blob-image optimization warnings, TypeScript typecheck, and the Next.js production build; the warnings were then narrowly suppressed because session-only `blob:` URLs cannot use the Next.js image optimizer.
 - 2026-07-18T17:32:48Z [TOOL] Final combined `swapp` tree passed ESLint, TypeScript typecheck, production build, and `git diff --check`; the no-mistakes gate repeated its pre-run `no previous run for branch swapp` failure.
 - 2026-07-18T17:10:33Z [TOOL] The connected Supabase project has RLS-enabled member/home/exchange/trust tables but zero `homes` rows, no tour/photo tables, no Storage buckets, and no recorded migrations.
@@ -68,6 +72,7 @@
 
 [OUTCOMES]
 
+- 2026-07-18T17:42:00Z [CODE] Local `swapp` now combines Supabase-backed discovery/details, interactive tour prototyping, authentication, member trust/history, and private exchange messaging; remote push and pending database migrations remain separate explicit actions.
 - 2026-07-18T17:30:23Z [CODE] The `swapp` tree now contains the interactive tour prototype and its unapplied Supabase persistence migration without regressing database-backed marketplace reads or home-detail behavior.
 - 2026-07-18T16:55:52Z [CODE] Members can now construct and preview a session-only interactive home tour without uploading images to a server; the UI includes non-hotspot scene navigation and image descriptions for accessibility.
 - 2026-07-18T16:18:52Z [CODE] `AGENTS.md` now defines product terminology, architecture, domain modeling, matching rules, security, privacy, containers, testing, documentation, workflow, and definition of done.

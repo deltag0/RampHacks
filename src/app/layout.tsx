@@ -2,9 +2,12 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Swapp — Go somewhere new. Feel right at home.",
+  title: {
+    default: "Swapp — Trusted home exchanges",
+    template: "%s | Swapp",
+  },
   description:
-    "Swap homes with people you can trust and experience the world like a local.",
+    "Find reciprocal home exchanges with members whose destinations, dates, and homes align.",
 };
 
 export default function RootLayout({

@@ -7,7 +7,9 @@ export default function HomeNotFound() {
     <main className="detail-page">
       <Header solid />
       <section className="not-found-state container">
-        <span><Home aria-hidden="true" /></span>
+        <span>
+          <Home aria-hidden="true" />
+        </span>
         <h1>This home is no longer available</h1>
         <p>
           It may be unpublished or the link may be out of date. Explore current
