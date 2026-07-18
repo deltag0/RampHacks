@@ -1,7 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Check, Heart, MapPin, Share2, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarRange,
+  Check,
+  Heart,
+  MapPin,
+  Share2,
+  Users,
+} from "lucide-react";
 import { Header } from "@/components/header";
 import { getPublishedHomeById } from "@/server/data/homes";
 
@@ -93,6 +101,23 @@ export default async function HomeDetailPage({ params }: HomeDetailPageProps) {
               )}
             </section>
 
+            <section className="detail-section">
+              <h2>Available for exchange</h2>
+              {home.availability.length ? (
+                <ul className="amenity-list">
+                  {home.availability.map((window) => (
+                    <li key={`${window.startsOn}-${window.endsOn}`}>
+                      <CalendarRange aria-hidden="true" />
+                      {formatDate(window.startsOn)}–{formatDate(window.endsOn)}
+                      <span> · {window.minimumNights}+ nights</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>This member has not published an availability window yet.</p>
+              )}
+            </section>
+
             <section className="detail-section location-privacy">
               <MapPin aria-hidden="true" />
               <div>
@@ -123,4 +148,11 @@ export default async function HomeDetailPage({ params }: HomeDetailPageProps) {
       </div>
     </main>
   );
+}
+
+function formatDate(value: string): string {
+  return new Intl.DateTimeFormat("en", {
+    dateStyle: "medium",
+    timeZone: "UTC",
+  }).format(new Date(`${value}T00:00:00Z`));
 }

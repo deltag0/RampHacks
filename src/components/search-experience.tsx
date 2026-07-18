@@ -19,6 +19,7 @@ import {
   serializeHomeSearchFilters,
   type HomeSearchFilters,
 } from "@/domain/homes/search-filters";
+import { filterHomes } from "@/domain/homes/filter-homes";
 import type { Home } from "@/server/data/homes";
 import { HomeCard } from "./home-card";
 
@@ -62,21 +63,10 @@ export function SearchExperience({ initialHomes }: { initialHomes: Home[] }) {
     return () => document.removeEventListener("keydown", closeOnEscape);
   }, [filtersOpen]);
 
-  const filtered = useMemo(() => {
-    const results = initialHomes.filter((home) => {
-      const term =
-        `${home.location} ${home.country} ${home.title}`.toLowerCase();
-      return (
-        (!filters.destination ||
-          term.includes(filters.destination.toLowerCase())) &&
-        (!filters.type || home.type === filters.type) &&
-        (!filters.travelers || home.guests >= filters.travelers) &&
-        filters.amenities.every((amenity) => home.amenities.includes(amenity))
-      );
-    });
-
-    return results;
-  }, [initialHomes, filters]);
+  const filtered = useMemo(
+    () => filterHomes(initialHomes, filters),
+    [initialHomes, filters],
+  );
 
   const update = (patch: Partial<HomeSearchFilters>) =>
     setFilters((current) => ({ ...current, ...patch }));

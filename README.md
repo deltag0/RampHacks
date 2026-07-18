@@ -8,6 +8,7 @@ private exchange messaging.
 Search state is encoded in `/search` using `destination`, `from`, `to`,
 `travelers`, `type`, and repeated `amenity` parameters. Home cards link to
 `/homes/[id]`; unknown or unpublished IDs receive a user-friendly 404.
+Requested dates must fit entirely inside one published availability window.
 
 ## Configuration
 
@@ -71,10 +72,30 @@ must have at least one photo before it can be published.
 ## Database migrations
 
 Apply the migrations under `supabase/migrations` in filename order. The
-member, messaging, and interactive-tour migrations are applied to the current
-hosted development project. Apply
+member, messaging, interactive-tour, and home-availability migrations are
+applied to the current hosted development project. Apply
 `20260718190000_create_home_photos.sql` before using listing photos or saving
 tours through the application.
+
+## Fictional showcase data
+
+`supabase/seed.sql` creates six explicitly fictional homes in Portugal, Japan,
+Canada, South Africa, Denmark, and Argentina, with varied capacities,
+amenities, accessibility features, rules, property types, and availability
+windows. The seed is idempotent and resolves the owner by requiring exactly
+one active member whose display name is `Kelvin`; it does not embed an account
+identifier.
+
+Run the seed only against a local, hosted-development, or other disposable
+database after the migrations. The showcase seed is applied to the current
+hosted development project. The current Compose workflow does not include a
+local Supabase CLI service, so there is not yet a repository-supported command
+that safely reapplies this data. Do not run the showcase seed against
+production.
+
+Generated listing photo files are intentionally not included until the
+image-generation workflow succeeds; do not attach unrelated stock imagery or
+real addresses as substitutes.
 
 ## Checks
 

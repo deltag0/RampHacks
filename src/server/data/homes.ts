@@ -11,6 +11,11 @@ export type Home = {
   amenities: string[];
   accessibility: string[];
   rules: string[];
+  availability: {
+    startsOn: string;
+    endsOn: string;
+    minimumNights: number;
+  }[];
 };
 
 const supabaseHomeSchema = z.object({
@@ -22,6 +27,13 @@ const supabaseHomeSchema = z.object({
   amenities: z.array(z.string()),
   accessibility_features: z.array(z.string()),
   house_rules: z.array(z.string()),
+  home_availability: z.array(
+    z.object({
+      starts_on: z.iso.date(),
+      ends_on: z.iso.date(),
+      minimum_nights: z.number().int().positive(),
+    }),
+  ),
   regions: z
     .object({
       name: z.string(),
@@ -41,6 +53,7 @@ const HOME_SELECT = [
   "amenities",
   "accessibility_features",
   "house_rules",
+  "home_availability(starts_on,ends_on,minimum_nights)",
   "regions(name,country_code)",
 ].join(",");
 
@@ -98,6 +111,11 @@ async function fetchHomes(path: string): Promise<Home[]> {
     amenities: home.amenities,
     accessibility: home.accessibility_features,
     rules: home.house_rules,
+    availability: home.home_availability.map((window) => ({
+      startsOn: window.starts_on,
+      endsOn: window.ends_on,
+      minimumNights: window.minimum_nights,
+    })),
   }));
 }
 
