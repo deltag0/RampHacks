@@ -1001,6 +1001,7 @@
     <p id="setupError" class="inline-error hidden" role="alert"></p>
     <div class="setup-actions">
       <div class="privacy-note"><span aria-hidden="true">🔒</span><span>No account or public post. Captures are sent for verification, then kept only in this browser unless you include them in the story.</span></div>
+      <button class="ghost" type="button" onclick="loadDemoScrapbook()">👀 Preview finished scrapbook</button>
       <button id="genBtn" type="button" onclick="generateHunt()">Generate Quest</button>
     </div>
   </section>
@@ -2186,6 +2187,44 @@ function renderScrapbook(included) {
   scrollToElement(root);
 }
 
+function loadDemoScrapbook() {
+  hunt = { hunt_title: "The Whispering Pines Loop" };
+  score = 480;
+  crew = {
+    name: "Muddy Boot Crew",
+    members: ["Alex", "Sam", "Jordan"],
+    storyStyle: "cozy_trail_journal"
+  };
+  generatedStory = {
+    fallback: false,
+    cover_title: "The Whispering Pines Loop",
+    subtitle: "Four discoveries, one unforgettable afternoon.",
+    opening: "The Muddy Boot Crew set out just after sunrise, boots still damp from last night's rain, chasing whatever the trail decided to show them.",
+    chapters: [
+      { challenge_id: "c1", heading: "The Mossy Sentinel", narration: "Alex spotted it first — a boulder wrapped in moss so thick it looked like it was wearing a sweater. Nobody could agree if it was one rock or three." },
+      { challenge_id: "c2", heading: "Water on Stone", narration: "The creek crossing turned into a twenty-minute photoshoot. Turns out moving water is a lot harder to capture than it looks." },
+      { challenge_id: "c3", heading: "The Leaf That Started a Debate", narration: "Sam swore it was a maple. Jordan swore it wasn't. The app sided with Sam, and Sam has not let it go since." },
+      { challenge_id: "c4", heading: "Summit Selfie", narration: "The final climb was steeper than the map suggested, but the view from the top made the whole crew forget their legs existed." }
+    ],
+    awards: [
+      { member: "Alex", title: "Sharpest Eyes", reason: "Spotted three finds before anyone else even looked up." },
+      { member: "Sam", title: "Most Stubborn Botanist", reason: "Correctly identified the maple leaf and will remind you forever." },
+      { member: "Jordan", title: "Morale Officer", reason: "Kept the crew laughing through the steepest mile of the day." }
+    ],
+    closing: "Four discoveries, three arguments about tree species, and one very good day outside. The Whispering Pines Loop will be waiting whenever the crew is ready for round two."
+  };
+  const now = Date.now();
+  const included = [
+    { challengeId: "c1", challengeTitle: "Mossy Sentinel", contributor: "Alex", memory: "It looked like it was wearing a sweater.", imageDataUrl: "https://picsum.photos/seed/trailquest-moss/1000/750", isCover: true, capturedAt: now - 1000 * 60 * 60 * 5 },
+    { challengeId: "c2", challengeTitle: "Water on Stone", contributor: "Jordan", memory: "Took twenty minutes to get the shot.", imageDataUrl: "https://picsum.photos/seed/trailquest-creek/1000/750", isCover: false, capturedAt: now - 1000 * 60 * 60 * 4 },
+    { challengeId: "c3", challengeTitle: "Mystery Leaf", contributor: "Sam", memory: "It's a maple. It was always a maple.", imageDataUrl: "https://picsum.photos/seed/trailquest-leaf/1000/750", isCover: false, capturedAt: now - 1000 * 60 * 60 * 3 },
+    { challengeId: "c4", challengeTitle: "Summit View", contributor: "The Crew", memory: "", imageDataUrl: "https://picsum.photos/seed/trailquest-summit/1000/750", isCover: false, capturedAt: now - 1000 * 60 * 60 * 2 }
+  ];
+  byId("score").textContent = String(score);
+  setHidden("setup", true);
+  renderScrapbook(included);
+}
+
 function startAnotherAdventure() {
   resetAdventureData();
   setHidden("game", true);
@@ -2423,6 +2462,8 @@ function createHeroLeaves(count) {
   host.appendChild(frag);
 }
 createHeroLeaves();
+
+if (location.hash === "#demo") loadDemoScrapbook();
 </script>
 </body>
 </html>
