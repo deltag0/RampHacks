@@ -34,8 +34,6 @@ export function SearchExperience({ initialHomes }: { initialHomes: Home[] }) {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const firstRender = useRef(true);
 
-  useEffect(() => setFilters(urlFilters), [urlFilters]);
-
   useEffect(() => {
     if (firstRender.current) {
       firstRender.current = false;
@@ -66,27 +64,18 @@ export function SearchExperience({ initialHomes }: { initialHomes: Home[] }) {
 
   const filtered = useMemo(() => {
     const results = initialHomes.filter((home) => {
-      const term = `${home.location} ${home.country} ${home.title}`.toLowerCase();
+      const term =
+        `${home.location} ${home.country} ${home.title}`.toLowerCase();
       return (
         (!filters.destination ||
           term.includes(filters.destination.toLowerCase())) &&
         (!filters.type || home.type === filters.type) &&
         (!filters.travelers || home.guests >= filters.travelers) &&
-        filters.amenities.every((amenity) =>
-          home.amenities.includes(amenity),
-        )
+        filters.amenities.every((amenity) => home.amenities.includes(amenity))
       );
     });
 
-    return [...results].sort((a, b) => {
-      if (filters.sort === "rating") {
-        return Number(b.rating) - Number(a.rating);
-      }
-      if (filters.sort === "exchanges") {
-        return b.member.exchanges - a.member.exchanges;
-      }
-      return 0;
-    });
+    return results;
   }, [initialHomes, filters]);
 
   const update = (patch: Partial<HomeSearchFilters>) =>
@@ -244,19 +233,6 @@ export function SearchExperience({ initialHomes }: { initialHomes: Home[] }) {
                 : "Homes ready for an exchange"}
             </h2>
           </div>
-          <label>
-            Sort by{" "}
-            <select
-              value={filters.sort}
-              onChange={(event) =>
-                update({ sort: event.target.value as HomeSearchFilters["sort"] })
-              }
-            >
-              <option value="recommended">Recommended</option>
-              <option value="rating">Top rated</option>
-              <option value="exchanges">Most exchanges</option>
-            </select>
-          </label>
         </div>
 
         {filtered.length ? (

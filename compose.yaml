@@ -5,24 +5,5 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgresql://swapp:swapp@db:5432/swapp
-    depends_on:
-      db:
-        condition: service_healthy
-
-  db:
-    image: postgis/postgis:17-3.5-alpine
-    environment:
-      POSTGRES_DB: swapp
-      POSTGRES_USER: swapp
-      POSTGRES_PASSWORD: swapp
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U swapp -d swapp"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-    volumes:
-      - swapp_postgres:/var/lib/postgresql/data
-
-volumes:
-  swapp_postgres:
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_PUBLISHABLE_KEY: ${SUPABASE_PUBLISHABLE_KEY}

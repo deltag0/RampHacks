@@ -16,8 +16,6 @@ export const HOME_AMENITIES = [
   "Bikes",
 ] as const;
 
-export const SORT_OPTIONS = ["recommended", "rating", "exchanges"] as const;
-
 export type HomeSearchFilters = {
   destination: string;
   from: string;
@@ -25,7 +23,6 @@ export type HomeSearchFilters = {
   travelers: number;
   type: string;
   amenities: string[];
-  sort: (typeof SORT_OPTIONS)[number];
 };
 
 export const DEFAULT_HOME_SEARCH_FILTERS: HomeSearchFilters = {
@@ -35,7 +32,6 @@ export const DEFAULT_HOME_SEARCH_FILTERS: HomeSearchFilters = {
   travelers: 0,
   type: "",
   amenities: [],
-  sort: "recommended",
 };
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -55,9 +51,7 @@ export function parseHomeSearchFilters(
       Number.isFinite(rawTravelers) && rawTravelers > 0
         ? Math.min(rawTravelers, 20)
         : 0,
-    type: HOME_TYPES.includes(
-      input.get("type") as (typeof HOME_TYPES)[number],
-    )
+    type: HOME_TYPES.includes(input.get("type") as (typeof HOME_TYPES)[number])
       ? (input.get("type") as string)
       : "",
     amenities: [
@@ -65,17 +59,10 @@ export function parseHomeSearchFilters(
         input
           .getAll("amenity")
           .filter((value) =>
-            HOME_AMENITIES.includes(
-              value as (typeof HOME_AMENITIES)[number],
-            ),
+            HOME_AMENITIES.includes(value as (typeof HOME_AMENITIES)[number]),
           ),
       ),
     ],
-    sort: SORT_OPTIONS.includes(
-      input.get("sort") as (typeof SORT_OPTIONS)[number],
-    )
-      ? (input.get("sort") as HomeSearchFilters["sort"])
-      : "recommended",
   };
 }
 
@@ -96,8 +83,6 @@ export function serializeHomeSearchFilters(
   }
   if (filters.type) params.set("type", filters.type);
   filters.amenities.forEach((amenity) => params.append("amenity", amenity));
-  if (filters.sort !== "recommended") params.set("sort", filters.sort);
-
   return params;
 }
 

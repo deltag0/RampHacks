@@ -6,7 +6,7 @@ landing page, searchable home discovery, filters, and a typed API seam ready for
 database-backed matching.
 
 Search state is encoded in the `/search` URL using `destination`, `from`, `to`,
-`travelers`, `type`, repeated `amenity`, and `sort` parameters. Home cards link
+`travelers`, `type`, and repeated `amenity` parameters. Home cards link
 to `/homes/[id]`; unknown or unpublished IDs receive a user-friendly 404.
 Malformed or unsupported filter values are ignored, traveler counts are capped,
 and browser back/forward navigation restores the visible controls.
@@ -19,8 +19,13 @@ Project tooling runs in containers:
 docker compose up --build
 ```
 
-Open `http://localhost:3000`. PostgreSQL with PostGIS is available to the web
-service through `DATABASE_URL`.
+Copy `.env.example` to `.env` and set the project URL and publishable key from
+the Supabase project settings. Then open `http://localhost:3000`.
+
+Published home discovery and detail pages read from the RLS-protected
+`public.homes` and `public.regions` tables through Supabase. Missing database
+configuration fails explicitly; the application does not fall back to
+placeholder marketplace records.
 
 ## Checks
 

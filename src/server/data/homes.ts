@@ -1,29 +1,110 @@
+import "server-only";
+import { z } from "zod";
+
 export type Home = {
   id: string;
   title: string;
   location: string;
   country: string;
   type: string;
-  beds: number;
   guests: number;
-  rating: string;
-  image: string;
-  badge?: string;
   amenities: string[];
-  member: { name: string; initials: string; exchanges: number };
-  description?: string;
-  bedrooms?: number;
-  bathrooms?: number;
-  images?: string[];
-  highlights?: string[];
-  rules?: string[];
-  accessibility?: string[];
+  accessibility: string[];
+  rules: string[];
 };
 
-// Real homes will be supplied by the persistence layer once home creation is
-// implemented. Keeping this empty avoids presenting synthetic members or homes.
-export const homes: Home[] = [];
+const supabaseHomeSchema = z.object({
+  id: z.string().uuid(),
+  title: z.string(),
+  approximate_location: z.string(),
+  capacity: z.number().int().positive(),
+  property_type: z.string(),
+  amenities: z.array(z.string()),
+  accessibility_features: z.array(z.string()),
+  house_rules: z.array(z.string()),
+  regions: z
+    .object({
+      name: z.string(),
+      country_code: z.string().length(2),
+    })
+    .nullable(),
+});
 
-export function getHomeById(id: string): Home | undefined {
-  return homes.find((home) => home.id === id);
+const supabaseHomesSchema = z.array(supabaseHomeSchema);
+
+const HOME_SELECT = [
+  "id",
+  "title",
+  "approximate_location",
+  "capacity",
+  "property_type",
+  "amenities",
+  "accessibility_features",
+  "house_rules",
+  "regions(name,country_code)",
+].join(",");
+
+export async function getPublishedHomes(): Promise<Home[]> {
+  return fetchHomes(
+    `homes?select=${encodeURIComponent(HOME_SELECT)}&publication_state=eq.published&order=created_at.desc`,
+  );
+}
+
+export async function getPublishedHomeById(
+  id: string,
+): Promise<Home | undefined> {
+  if (!z.string().uuid().safeParse(id).success) return undefined;
+
+  const homes = await fetchHomes(
+    `homes?select=${encodeURIComponent(HOME_SELECT)}&publication_state=eq.published&id=eq.${encodeURIComponent(id)}&limit=1`,
+  );
+  return homes[0];
+}
+
+async function fetchHomes(path: string): Promise<Home[]> {
+  const url = process.env.SUPABASE_URL;
+  const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY;
+
+  if (!url || !publishableKey) {
+    throw new Error(
+      "Supabase is not configured. Set SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY.",
+    );
+  }
+
+  const response = await fetch(`${url}/rest/v1/${path}`, {
+    headers: {
+      apikey: publishableKey,
+      Authorization: `Bearer ${publishableKey}`,
+    },
+    next: { revalidate: 60 },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Supabase homes request failed with ${response.status}`);
+  }
+
+  const parsed = supabaseHomesSchema.safeParse(await response.json());
+  if (!parsed.success) {
+    throw new Error("Supabase returned an invalid public homes payload");
+  }
+
+  return parsed.data.map((home) => ({
+    id: home.id,
+    title: home.title,
+    location: home.approximate_location,
+    country: countryName(home.regions?.country_code),
+    type: home.property_type,
+    guests: home.capacity,
+    amenities: home.amenities,
+    accessibility: home.accessibility_features,
+    rules: home.house_rules,
+  }));
+}
+
+function countryName(countryCode?: string): string {
+  if (!countryCode) return "Region unavailable";
+  return (
+    new Intl.DisplayNames(["en"], { type: "region" }).of(countryCode) ??
+    countryCode
+  );
 }

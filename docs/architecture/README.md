@@ -8,7 +8,8 @@ Swapp starts as a TypeScript modular monolith so the product can move quickly wi
 - `src/domain` is reserved for framework-independent matching, exchange, home, and member rules.
 - `services/matching` should only be added if optimization or ranking experiments justify a separate Python service.
 
-The current `/api/homes` route returns an empty collection until home creation
-is implemented. Replace its data module with a repository backed by
-PostgreSQL/PostGIS while keeping the route contract stable for frontend
-consumers.
+The landing page, search route, home detail route, and `/api/homes` endpoint use
+the shared server-only repository in `src/server/data/homes.ts`. That repository
+reads published homes and their normalized regions from Supabase through its
+REST API and validates every response with Zod. Supabase RLS remains the
+authorization boundary; there is no in-memory marketplace fallback.
