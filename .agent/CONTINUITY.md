@@ -2,6 +2,7 @@
 
 [PLANS]
 
+- 2026-07-18T18:08:57Z [USER] Merge the validated OpenAI-generated suggestion feature into `swapp` and push it to the remote branch.
 - 2026-07-18T18:10:00Z [USER] Explicitly waived the no-mistakes gate and requested a direct push of the validated commit to `origin/swapp`.
 - 2026-07-18T18:08:00Z [USER] Commit, validate through no-mistakes, and push the Kelvin showcase and date-filtering changes to `origin/swapp`.
 - 2026-07-18T18:02:00Z [USER] Explicitly authorized applying the Kelvin showcase migration and seed to the connected remote development project.
@@ -40,6 +41,7 @@
 
 [PROGRESS]
 
+- 2026-07-18T18:08:57Z [TOOL] Rebased AI suggestions onto current `swapp`, preserved both sides of the continuity log conflict, fast-forwarded local `swapp` to `16ee491`, completed a push dry run, and pushed the feature commit to `origin/swapp`.
 - 2026-07-18T18:02:00Z [TOOL] Ran the remote migration plus seed in a transaction that was rolled back, confirmed the dry run produced 6 homes and 8 windows, then applied `create_home_availability` and the idempotent seed to the connected hosted development project.
 - 2026-07-18T17:53:31Z [CODE] Added local availability schema/RLS, six fictional homes across Portugal, Japan, Canada, South Africa, Denmark, and Argentina, eight varied windows, shared date-aware filtering, detail-page availability display, regression tests, and README guidance.
 - 2026-07-18T18:00:49Z [CODE] Added the `/api/suggestions` Responses API adapter, strict output schema, filter-fact verifier, authenticated search-result UI, per-instance member rate limit, tests, environment configuration, and operational documentation.
@@ -67,6 +69,7 @@
 
 [DISCOVERIES]
 
+- 2026-07-18T18:08:57Z [TOOL] The no-mistakes v1.31.2 gate could not create a run for either fresh feature branch (`no previous run for branch`), and its internal mirror rejected the rebased original branch non-fast-forward; manual Prettier, ESLint, strict TypeScript, 20 Vitest assertions, webpack production build, and whitespace checks passed.
 - 2026-07-18T18:02:00Z [TOOL] Post-write SQL verification confirmed all six published homes belong to Kelvin and span AR, CA, DK, JP, PT, and ZA; application REST smoke tests returned 6 homes/8 windows and the combined South Africa/date/capacity/Villa/Pool filter returned exactly the fictional Cape Town villa.
 - 2026-07-18T17:53:31Z [TOOL] Read-only inspection confirmed exactly one active member named Kelvin and no regions/homes in the connected development project; no remote data or schema was changed.
 - 2026-07-18T17:53:31Z [TOOL] The built-in image generator failed with a network error; synthetic raster assets remain UNCONFIRMED because CLI fallback requires explicit user approval and an API key.
@@ -97,6 +100,7 @@
 
 [OUTCOMES]
 
+- 2026-07-18T18:08:57Z [TOOL] `origin/swapp` now contains the secure AI-generated suggestion feature at commit `16ee491`; no force push, Supabase mutation, or OpenAI API call was performed during delivery.
 - 2026-07-18T18:02:00Z [TOOL] SUPERSEDES the unapplied portion of the 2026-07-18T17:53:31Z outcome: availability schema, six Kelvin homes, and eight windows are now live in the connected hosted development project; generated photo objects and the separate photo migration remain unapplied.
 - 2026-07-18T17:53:31Z [CODE] Local code now supports an idempotent Kelvin showcase dataset and genuine date filtering; applying migrations/seed and adding generated photo objects remain intentionally unapplied pending a safe local database command and successful/approved image generation.
 - 2026-07-18T18:00:49Z [CODE] Signed-in members can request an AI-written explanation for a published search result without allowing OpenAI to choose eligibility/ranking or receive exact addresses, private messages, member profiles, or database write access.
