@@ -49,6 +49,53 @@
   body.no-scroll { overflow: hidden; }
   button, input, select, textarea { font: inherit; }
   button, input, select, textarea { min-height: 44px; }
+
+  /* header / nature hero */
+  header.hero {
+    position: relative; overflow: hidden; isolation: isolate;
+    min-height: 230px; display: flex; align-items: flex-end; padding: 0 !important;
+  }
+  .hero-bg { position: absolute; inset: 0; z-index: 0; background: var(--forest); }
+  .hero-bg-layer {
+    position: absolute; inset: 0; background-size: cover; background-position: center;
+    opacity: 0; animation: heroCrossfade 21s infinite; will-change: opacity, transform;
+  }
+  .hero-bg-layer:nth-child(1) { animation-delay: 0s; }
+  .hero-bg-layer:nth-child(2) { animation-delay: 7s; }
+  .hero-bg-layer:nth-child(3) { animation-delay: 14s; }
+  @keyframes heroCrossfade {
+    0%, 4.5%   { opacity: 0; transform: scale(1.06); }
+    9%, 28.5%  { opacity: 1; transform: scale(1.12); }
+    33%, 100%  { opacity: 0; transform: scale(1.12); }
+  }
+  .hero-scrim {
+    position: absolute; inset: 0; z-index: 1;
+    background: linear-gradient(180deg, rgba(10,12,8,.25) 0%, rgba(10,12,8,.55) 65%, rgba(8,10,6,.85) 100%);
+  }
+  .hero-leaves { position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; }
+  .hero-leaf { position: absolute; bottom: -10%; animation: leafDrift linear infinite; }
+  @keyframes leafDrift {
+    0%   { transform: translate(0, 0) rotate(0deg); }
+    100% { transform: translate(var(--dx, 40px), -280px) rotate(var(--rot, 320deg)); }
+  }
+  @media (min-height: 600px) {
+    @keyframes leafDrift {
+      0%   { transform: translate(0, 0) rotate(0deg); }
+      100% { transform: translate(var(--dx, 40px), -420px) rotate(var(--rot, 320deg)); }
+    }
+  }
+  .hero-content { position: relative; z-index: 3; width: 100%; padding: 28px 16px 18px; }
+  .hero-content .brand, .hero-content .tagline { max-width: 780px; margin-left: auto; margin-right: auto; }
+  .hero-content .brand h1, .hero-content .tagline { color: #fff; }
+  .hero-content .brand-mark { background: #fff; }
+  .hero-content .brand-mark::after { background: var(--accent-ink); }
+  .hero-content button.ghost.small { color: #fff; border-color: rgba(255,255,255,.4); }
+  .hero-content button.ghost.small:hover { background: rgba(255,255,255,.12); }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-bg-layer, .hero-leaf { animation: none !important; opacity: 1 !important; }
+    .hero-bg-layer:not(:first-child) { display: none; }
+  }
+
   button {
     border: 0;
     border-radius: var(--radius-sm);
@@ -887,15 +934,24 @@
 </style>
 </head>
 <body>
-<header>
-  <div class="brand">
-    <div class="brand-mark" aria-hidden="true"></div>
-    <h1>TrailQuest</h1>
-    <div class="header-actions">
-      <button class="ghost small" type="button" onclick="toggleTrophyCase()"><span aria-hidden="true">🏆</span> <span class="label-copy">Trophy Case</span></button>
-    </div>
+<header class="hero">
+  <div class="hero-bg" aria-hidden="true">
+    <div class="hero-bg-layer" style="background-image:url('/images/hero-forest.jpg')"></div>
+    <div class="hero-bg-layer" style="background-image:url('/images/hero-mountains.jpg')"></div>
+    <div class="hero-bg-layer" style="background-image:url('/images/hero-lake.jpg')"></div>
   </div>
-  <p class="tagline">Find the moment. Remember the people. Bring home the story.</p>
+  <div class="hero-scrim" aria-hidden="true"></div>
+  <div class="hero-leaves" id="heroLeaves" aria-hidden="true"></div>
+  <div class="hero-content">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"></div>
+      <h1>TrailQuest</h1>
+      <div class="header-actions">
+        <button class="ghost small" type="button" onclick="toggleTrophyCase()"><span aria-hidden="true">🏆</span> <span class="label-copy">Trophy Case</span></button>
+      </div>
+    </div>
+    <p class="tagline">Find the moment. Remember the people. Bring home the story.</p>
+  </div>
 </header>
 
 <main class="wrap">
@@ -2328,6 +2384,45 @@ window.addEventListener("beforeunload", stopCamera);
 loadCrewPreferences();
 persistCollection(getCollection());
 updateRankBar();
+
+/* ---------- hero: floating leaf particles ---------- */
+
+function createHeroLeaves(count) {
+  count = count || 16;
+  const host = document.getElementById("heroLeaves");
+  if (!host || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const greens = ["#8bc34a", "#6b9e3f", "#a9d977", "#4f7a3a", "#c8e6a0", "#d7f13a"];
+  const leafSVG = '<svg viewBox="0 0 24 24" width="100%" height="100%" fill="currentColor" fill-opacity=".85" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>' +
+    '<path fill="none" stroke-opacity=".5" d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>' +
+    '</svg>';
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < count; i++) {
+    const depth = Math.random();
+    const size = 12 + depth * 26;
+    const duration = 13 + Math.random() * 11;
+    const delay = -Math.random() * duration;
+    const left = Math.random() * 100;
+    const dx = Math.round((Math.random() * 2 - 1) * 70);
+    const rot = Math.round(220 + Math.random() * 300);
+    const el = document.createElement("div");
+    el.className = "hero-leaf";
+    el.style.left = left + "%";
+    el.style.width = size + "px";
+    el.style.height = size + "px";
+    el.style.color = greens[Math.floor(Math.random() * greens.length)];
+    el.style.opacity = (0.25 + depth * 0.55).toFixed(2);
+    el.style.filter = "blur(" + ((1 - depth) * 2).toFixed(1) + "px)";
+    el.style.animationDuration = duration + "s";
+    el.style.animationDelay = delay + "s";
+    el.style.setProperty("--dx", dx + "px");
+    el.style.setProperty("--rot", rot + "deg");
+    el.innerHTML = leafSVG;
+    frag.appendChild(el);
+  }
+  host.appendChild(frag);
+}
+createHeroLeaves();
 </script>
 </body>
 </html>
