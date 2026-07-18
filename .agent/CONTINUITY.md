@@ -29,6 +29,7 @@
 - 2026-07-18T16:57:49Z [TOOL] Committed the completed work as `2b5d0aa` and pushed branch `home-detail-url-filters` to `origin`.
 - 2026-07-18T17:02:08Z [TOOL] Merged `home-detail-url-filters` into `swapp` with merge commit `a4c9f27`; overlapping independently committed files were resolved to the complete feature tree.
 - 2026-07-18T17:08:44Z [CODE] Replaced the in-memory home repository with a Zod-validated Supabase REST repository shared by landing, search, detail, and `/api/homes`; removed hard-coded destination inventory and unsupported sort/trust claims.
+- 2026-07-18T17:12:10Z [TOOL] Committed the Supabase integration as `b00ff5d` on new branch `supabase-data-integration` and pushed it to `origin` without merging into `swapp`.
 
 [DISCOVERIES]
 
@@ -45,6 +46,7 @@
 - 2026-07-18T17:08:44Z [TOOL] Supabase public schema has 8 RLS-enabled tables and 0 rows; public anonymous reads are permitted for published `homes` and `regions`, while member/trust reads require authentication.
 - 2026-07-18T17:08:44Z [TOOL] Supabase advisors reported externally callable SECURITY DEFINER functions and several unindexed foreign keys; no remote schema changes were made.
 - 2026-07-18T17:08:44Z [TOOL] Local lint, TypeScript typecheck, production build, and `git diff --check` passed after Supabase integration; direct local REST networking was unavailable, while MCP schema/policy reads succeeded.
+- 2026-07-18T17:12:10Z [TOOL] Runtime smoke tests subsequently passed for `/`, `/search`, `/api/homes`, and the unknown-home 404 using the ignored local Supabase configuration; the no-mistakes gate still failed before creating a run.
 
 [OUTCOMES]
 
