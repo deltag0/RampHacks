@@ -267,6 +267,61 @@
 
   footer { text-align: center; color: var(--ink-3); font-size: .78rem; padding: 8px 0 30px; }
   footer .dot { margin: 0 6px; }
+
+  /* ---------- Trail map (challenge roadmap) ---------- */
+  :root {
+    --map-bg: #efe3c4;
+    --map-bg-2: #e3d09e;
+    --map-ink: #5b4327;
+    --map-ink-2: #8a7250;
+    --map-line: #b99f6f;
+    --map-gold: #b8860b;
+    --map-path-todo: #c9b385;
+  }
+  .map-wrap {
+    position: relative; border-radius: var(--radius); border: 1px solid var(--map-line);
+    background:
+      radial-gradient(ellipse at 18% 12%, rgba(255,255,255,.35), transparent 55%),
+      radial-gradient(circle at 88% 82%, rgba(139,110,60,.14), transparent 55%),
+      repeating-linear-gradient(0deg, rgba(139,110,60,.06) 0px, rgba(139,110,60,.06) 1px, transparent 1px, transparent 24px),
+      repeating-linear-gradient(90deg, rgba(139,110,60,.06) 0px, rgba(139,110,60,.06) 1px, transparent 1px, transparent 24px),
+      linear-gradient(160deg, var(--map-bg), var(--map-bg-2));
+    box-shadow: inset 0 0 50px rgba(91,67,39,.22), 0 1px 2px rgba(12,12,11,.05);
+    overflow: hidden; margin-bottom: 14px; padding: 4px;
+  }
+  .map-inner { position: relative; width: 100%; }
+  .map-inner svg { display: block; width: 100%; height: auto; }
+  .map-node-btn {
+    position: absolute; transform: translate(-50%,-50%); width: 46px; height: 46px;
+    border-radius: 50%; border: 2.5px solid var(--map-ink); background: var(--map-bg);
+    display: flex; align-items: center; justify-content: center; font-weight: 800;
+    color: var(--map-ink); cursor: pointer; font-family: inherit; font-size: .95rem;
+    box-shadow: 0 2px 6px rgba(91,67,39,.35); transition: transform .15s ease; padding: 0;
+  }
+  .map-node-btn:hover { background: var(--map-bg); transform: translate(-50%,-50%) scale(1.08); }
+  .map-node-btn.done { background: var(--map-gold); color: #fff8e6; border-color: #8a6a1f; }
+  .map-node-btn.current { position: absolute; }
+  .map-node-btn.current::after {
+    content: ""; position: absolute; inset: -6px; border-radius: 50%;
+    border: 2px solid var(--map-gold); animation: mapPulse 1.8s ease-out infinite;
+  }
+  .map-node-btn.selected { box-shadow: 0 0 0 3px var(--ink), 0 2px 6px rgba(91,67,39,.35); }
+  .map-node-btn.treasure { font-size: 1.25rem; }
+  @keyframes mapPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(184,134,11,.45); }
+    100% { box-shadow: 0 0 0 12px rgba(184,134,11,0); }
+  }
+  .map-node-label {
+    position: absolute; transform: translate(-50%, 4px); white-space: nowrap;
+    font-size: .66rem; font-weight: 700; color: var(--map-ink);
+    background: rgba(239,228,200,.88); padding: 2px 6px; border-radius: 6px;
+    pointer-events: none; max-width: 120px; overflow: hidden; text-overflow: ellipsis;
+  }
+  .map-legend {
+    position: absolute; left: 12px; bottom: 10px; font-size: .64rem; color: var(--map-ink-2);
+    font-weight: 600; letter-spacing: .03em;
+  }
+  .map-compass { position: absolute; right: 12px; top: 10px; font-size: 1.15rem; opacity: .75; }
 </style>
 </head>
 <body>
@@ -322,7 +377,12 @@
     </div>
     <div class="card">
       <div id="huntTitle" class="hunt-title"></div>
-      <div id="challenges"></div>
+      <div id="mapWrap" class="map-wrap">
+        <div id="mapInner" class="map-inner"></div>
+        <span class="map-compass">🧭</span>
+        <span class="map-legend">✦ follow the trail to the next find</span>
+      </div>
+      <div id="challengeDetail" class="challenge hidden"></div>
     </div>
 
     <!-- CAMERA -->
@@ -384,6 +444,7 @@ let mode = "trail";
 let hunt = null;
 let score = 0;
 let activeIdx = null;
+let selectedIdx = null;
 let stream = null;
 
 const COLLECTION_KEY = "trailquest_collection";
@@ -425,27 +486,129 @@ function renderHunt() {
   document.getElementById("setup").classList.add("hidden");
   document.getElementById("game").classList.remove("hidden");
   document.getElementById("huntTitle").textContent = hunt.hunt_title || "Your Quest";
-  const list = document.getElementById("challenges");
-  list.innerHTML = "";
-  hunt.challenges.forEach((c, i) => {
-    c.done = false;
-    const rarity = c.rarity || "common";
-    const el = document.createElement("div");
-    el.className = "challenge";
-    el.id = "ch-" + i;
-    el.innerHTML = `
-      <div class="body">
-        <div class="challenge-head">
-          <h3>${c.species_name || c.title}</h3>
-          <span class="rarity-tag rarity-${rarity}">${rarity}</span>
-        </div>
-        <p>${c.clue}</p>
-        ${c.location ? `<p class="loc-hint">📍 near ${c.location.name}</p>` : ""}
-        <button onclick="openCam(${i})">Attempt</button>
-      </div>
-      <span class="pts">${c.points} pts</span>`;
-    list.appendChild(el);
+  hunt.challenges.forEach(c => c.done = false);
+  renderMap();
+  selectNode(0);
+}
+
+/* ---------- trail map (challenge roadmap) ---------- */
+
+function trailNodePoints(n, width, topPad, spacing) {
+  const pts = [];
+  for (let i = 0; i < n; i++) {
+    pts.push({ x: 200 + 118 * Math.sin(i * 1.35 + 0.5), y: topPad + i * spacing });
+  }
+  return pts;
+}
+
+function smoothPathD(pts) {
+  if (pts.length < 2) return "";
+  let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] || pts[i];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[i + 2] || p2;
+    const cp1x = p1.x + (p2.x - p0.x) / 6, cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6, cp2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+  }
+  return d;
+}
+
+function decorativeXMarks(width, height) {
+  const marks = [[width * 0.14, height * 0.09], [width * 0.86, Math.min(height * 0.94, height - 30)]];
+  return `<g opacity="0.35" stroke="var(--map-ink-2)" stroke-width="2" stroke-linecap="round">` +
+    marks.map(([x, y]) =>
+      `<line x1="${x-7}" y1="${y-7}" x2="${x+7}" y2="${y+7}"/><line x1="${x-7}" y1="${y+7}" x2="${x+7}" y2="${y-7}"/>`
+    ).join("") + `</g>`;
+}
+
+function addTrailDots(svgEl, pathEl, nodePts) {
+  if (!pathEl) return;
+  const total = pathEl.getTotalLength();
+  if (!total) return;
+  for (let d = 0; d <= total; d += 16) {
+    const pt = pathEl.getPointAtLength(d);
+    if (nodePts.some(p => Math.hypot(p.x - pt.x, p.y - pt.y) < 22)) continue;
+    const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    dot.setAttribute("cx", pt.x.toFixed(1));
+    dot.setAttribute("cy", pt.y.toFixed(1));
+    dot.setAttribute("r", "2.2");
+    dot.setAttribute("fill", "var(--map-ink-2)");
+    dot.setAttribute("opacity", "0.55");
+    svgEl.appendChild(dot);
+  }
+}
+
+function renderMap() {
+  const n = hunt.challenges.length;
+  const width = 400, topPad = 60, spacing = 140, botPad = 60;
+  const height = topPad + botPad + Math.max(n - 1, 0) * spacing;
+  const pts = trailNodePoints(n, width, topPad, spacing);
+
+  let doneCount = 0;
+  while (doneCount < n && hunt.challenges[doneCount].done) doneCount++;
+  const dTodo = smoothPathD(pts);
+  const dDone = doneCount > 0 ? smoothPathD(pts.slice(0, Math.min(doneCount + (doneCount < n ? 1 : 0), n))) : "";
+
+  let svg = `<svg viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">`;
+  svg += `<path id="todoPath" d="${dTodo}" fill="none" stroke="var(--map-path-todo)" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 10"/>`;
+  if (dDone) svg += `<path id="donePath" d="${dDone}" fill="none" stroke="var(--map-gold)" stroke-width="3.5" stroke-linecap="round"/>`;
+  svg += decorativeXMarks(width, height);
+  svg += `</svg>`;
+
+  const mapInner = document.getElementById("mapInner");
+  mapInner.style.aspectRatio = width + " / " + height;
+  mapInner.innerHTML = svg;
+
+  const svgEl = mapInner.querySelector("svg");
+  addTrailDots(svgEl, svgEl.querySelector("#todoPath"), pts);
+
+  const frag = document.createDocumentFragment();
+  pts.forEach((p, i) => {
+    const c = hunt.challenges[i];
+    const isLast = i === n - 1;
+    const isCurrent = i === doneCount && !c.done;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "map-node-btn" + (c.done ? " done" : "") + (isCurrent ? " current" : "") + (isLast ? " treasure" : "") + (i === selectedIdx ? " selected" : "");
+    btn.style.left = (p.x / width * 100) + "%";
+    btn.style.top = (p.y / height * 100) + "%";
+    btn.textContent = c.done ? "✓" : (isLast ? "✕" : String(i + 1));
+    btn.title = c.species_name || c.title || ("Challenge " + (i + 1));
+    btn.onclick = () => selectNode(i);
+    frag.appendChild(btn);
+
+    const label = document.createElement("span");
+    label.className = "map-node-label";
+    label.style.left = (p.x / width * 100) + "%";
+    label.style.top = (p.y / height * 100) + "%";
+    label.textContent = c.species_name || c.title || "";
+    frag.appendChild(label);
   });
+  mapInner.appendChild(frag);
+}
+
+function selectNode(i) {
+  selectedIdx = i;
+  document.querySelectorAll(".map-node-btn").forEach((b, idx) => b.classList.toggle("selected", idx === i));
+  const c = hunt.challenges[i];
+  const rarity = c.rarity || "common";
+  const detail = document.getElementById("challengeDetail");
+  detail.classList.remove("hidden");
+  detail.classList.toggle("done", !!c.done);
+  detail.innerHTML = `
+    <div class="body">
+      <div class="challenge-head">
+        <h3>${c.species_name || c.title}</h3>
+        <span class="rarity-tag rarity-${rarity}">${rarity}</span>
+      </div>
+      <p>${c.clue}</p>
+      ${c.location ? `<p class="loc-hint">📍 near ${c.location.name}</p>` : ""}
+      ${c.done ? '<span class="check">Completed</span>' : `<button onclick="openCam(${i})">Attempt</button>`}
+    </div>
+    <span class="pts">${c.points} pts</span>`;
 }
 
 async function openCam(i) {
@@ -488,7 +651,10 @@ function backToSetup() {
   }
   hunt = null;
   score = 0;
+  selectedIdx = null;
   document.getElementById("score").textContent = "0";
+  document.getElementById("mapInner").innerHTML = "";
+  document.getElementById("challengeDetail").classList.add("hidden");
   document.getElementById("game").classList.add("hidden");
   document.getElementById("recapCard").classList.add("hidden");
   document.getElementById("setup").classList.remove("hidden");
@@ -571,9 +737,9 @@ function markDone(i) {
   score += c.points;
   document.getElementById("score").textContent = score;
   addXP(c.points);
-  const el = document.getElementById("ch-" + i);
-  el.classList.add("done");
-  el.querySelector("button").outerHTML = '<span class="check">Completed</span>';
+  renderMap();
+  const nextIdx = hunt.challenges.findIndex(x => !x.done);
+  selectNode(nextIdx === -1 ? i : nextIdx);
   if (hunt.challenges.every(x => x.done)) finish();
 }
 
