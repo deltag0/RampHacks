@@ -38,6 +38,9 @@ class StorytellerFrontendContractTests(unittest.TestCase):
             "crewName",
             "memberNames",
             "storyStripCard",
+            "mapWrap",
+            "mapInner",
+            "challengeDetail",
             "momentOverlay",
             "review",
             "reviewGrid",
@@ -59,6 +62,16 @@ class StorytellerFrontendContractTests(unittest.TestCase):
         self.assertNotIn('fetch("/api/recap"', self.script)
         self.assertIn("showReview();", self.script)
         self.assertIn("localFallbackStory", self.script)
+
+    def test_trail_map_preserves_the_storyteller_contract(self):
+        self.assertIn("function renderMap()", self.script)
+        self.assertIn("function selectNode(i)", self.script)
+        self.assertIn('document.createElementNS("http://www.w3.org/2000/svg", tag)', self.script)
+        self.assertIn("const challengeIds = new Set()", self.script)
+        self.assertIn("replacementId", self.script)
+        self.assertNotIn("function finish(", self.script)
+        self.assertNotIn('byId("challenges")', self.script)
+        self.assertNotIn("recapCard", self.script)
 
     def test_photo_data_is_not_written_to_browser_storage(self):
         persistence_match = re.search(
