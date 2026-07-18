@@ -27,6 +27,7 @@
 [PROGRESS]
 
 - 2026-07-18T17:30:23Z [TOOL] Merged commit `1fdd6ed` from `interactive-home-tour` into `swapp`; conflicts preserved the newer Supabase discovery/detail implementation while adding the tour route, graph model, styles, navigation, documentation, and local migration.
+- 2026-07-18T17:32:48Z [TOOL] Verified `origin/supabase-data-integration` is an ancestor of local `swapp` and pushed combined commit `e8d6a63` to `origin/swapp` without force-pushing or changing either feature branch.
 - 2026-07-18T17:10:33Z [CODE] Added `home_tours`, `home_tour_scenes`, `home_tour_connections`, same-tour foreign-key invariants, owner/published RLS policies, and a constrained private `home-tour-images` bucket migration.
 - 2026-07-18T16:55:52Z [CODE] Added `/tour-builder` with multi-image scene creation, room names and image descriptions, positioned connections, scene/connection removal, and visitor preview navigation.
 - 2026-07-18T16:55:52Z [CODE] Added tour entry points to the global header and documented privacy and persistence boundaries.
@@ -46,6 +47,7 @@
 [DISCOVERIES]
 
 - 2026-07-18T17:30:23Z [TOOL] Resolved merge passed ESLint with two blob-image optimization warnings, TypeScript typecheck, and the Next.js production build; the warnings were then narrowly suppressed because session-only `blob:` URLs cannot use the Next.js image optimizer.
+- 2026-07-18T17:32:48Z [TOOL] Final combined `swapp` tree passed ESLint, TypeScript typecheck, production build, and `git diff --check`; the no-mistakes gate repeated its pre-run `no previous run for branch swapp` failure.
 - 2026-07-18T17:10:33Z [TOOL] The connected Supabase project has RLS-enabled member/home/exchange/trust tables but zero `homes` rows, no tour/photo tables, no Storage buckets, and no recorded migrations.
 - 2026-07-18T17:10:33Z [TOOL] Supabase authentication/client code exists only as uncommitted work in `/Users/termev/RampHacks-user-management`; integrating it here would overwrite or duplicate another contributor's in-progress files. Tour UI persistence remains BLOCKED on that work being merged or otherwise handed off.
 - 2026-07-18T16:55:52Z [TOOL] Containerized checks were blocked because Docker Desktop requires organization sign-in; local project tooling is absent, so format, lint, typecheck, and build remain UNCONFIRMED. `git diff --check` passed.
