@@ -10,14 +10,15 @@ export function Header({ solid = false }: { solid?: boolean }) {
         </Link>
         <nav aria-label="Main navigation">
           <Link href="/search">Find a home</Link>
+          <Link href="/tour-builder">Build a tour</Link>
           <Link href="/#how-it-works">How it works</Link>
           <a href="#">Trust &amp; safety</a>
         </nav>
         <div className="header-actions">
           <a href="#">Log in</a>
-          <a href="#" className="button button-small">
+          <Link href="/tour-builder" className="button button-small">
             List your home
-          </a>
+          </Link>
           <button className="menu-button" aria-label="Open menu">
             <Menu size={21} />
           </button>

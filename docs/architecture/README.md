@@ -13,3 +13,23 @@ the shared server-only repository in `src/server/data/homes.ts`. That repository
 reads published homes and their normalized regions from Supabase through its
 REST API and validates every response with Zod. Supabase RLS remains the
 authorization boundary; there is no in-memory marketplace fallback.
+
+## Interactive home tours
+
+The initial tour prototype separates framework-independent graph types and
+edge-cleanup rules in `src/domain/home-tours` from the interactive editor in
+`src/components`. A tour consists of scenes and directed connections. Each
+connection stores a destination, an accessible label, and percentage-based
+coordinates so hotspots remain aligned as an image resizes.
+
+`supabase/migrations/20260718180000_create_interactive_home_tours.sql` defines
+the intended persistence model: one tour per existing `homes.id`, ordered
+scenes with private Storage paths, directed connections constrained to scenes
+in the same tour, owner-based RLS, and published-tour read policies. The
+`home-tour-images` bucket remains private and accepts only constrained image
+types and sizes.
+
+The current UI still uses browser-session object URLs and must not be presented
+as a saved listing workflow. Database actions should be connected only after
+the Supabase authentication/client work is merged, so every write carries the
+member session and is checked against `homes.owner_member_id`.
