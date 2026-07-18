@@ -5,6 +5,12 @@ other's regions without booking hotels. The initial product includes a polished
 landing page, searchable home discovery, filters, and a typed API seam ready for
 database-backed matching.
 
+Search state is encoded in the `/search` URL using `destination`, `from`, `to`,
+`travelers`, `type`, repeated `amenity`, and `sort` parameters. Home cards link
+to `/homes/[id]`; unknown or unpublished IDs receive a user-friendly 404.
+Malformed or unsupported filter values are ignored, traveler counts are capped,
+and browser back/forward navigation restores the visible controls.
+
 ## Run locally
 
 Project tooling runs in containers:
