@@ -25,6 +25,7 @@
 - 2026-07-18T16:43:01Z [CODE] Removed all synthetic home/member records and fake destination inventory counts; landing and search now render explicit empty states.
 - 2026-07-18T16:51:22Z [CODE] Added URL-synchronized destination, date, traveler, home type, amenity, and sort filters plus a responsive home detail surface and unpublished-home 404.
 - 2026-07-18T16:51:22Z [CODE] Reused the same validated filter contract in `/api/homes` so browser and API filtering cannot drift.
+- 2026-07-18T16:57:49Z [TOOL] Committed the completed work as `2b5d0aa` and pushed branch `home-detail-url-filters` to `origin`.
 
 [DISCOVERIES]
 
@@ -36,6 +37,7 @@
 - 2026-07-18T16:25:52Z [TOOL] `git diff --check` completed without whitespace errors.
 - 2026-07-18T16:43:01Z [TOOL] Confirmed synthetic member names, listing IDs, ratings, badges, and inventory counts no longer occur in source; `git diff --check` passed.
 - 2026-07-18T16:51:22Z [TOOL] Container checks were blocked because Docker Desktop requires organization sign-in; workspace dependencies are absent, so lint, typecheck, and build remain UNCONFIRMED.
+- 2026-07-18T16:57:49Z [TOOL] The no-mistakes gate was initialized but failed before creating a run with `no previous run for branch`; remote push dry-run and remote commit verification succeeded.
 
 [OUTCOMES]
 
