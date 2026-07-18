@@ -16,6 +16,7 @@ export type TourScene = {
   name: string;
   imageUrl: string;
   imageAlt: string;
+  storagePath?: string;
 };
 
 export type HomeTour = {

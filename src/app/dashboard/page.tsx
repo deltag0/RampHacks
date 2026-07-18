@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { MessageCircle } from "lucide-react";
+import { House, MessageCircle } from "lucide-react";
 import { signOut } from "@/app/auth/actions";
 import { createClient } from "@/lib/supabase/server";
 
@@ -63,6 +63,13 @@ export default async function DashboardPage({
             Swapp
           </Link>
           <div className="flex items-center gap-2">
+            <Link
+              href="/dashboard/homes"
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-stone-600 hover:bg-stone-100 hover:text-stone-950"
+            >
+              <House size={17} />
+              My homes
+            </Link>
             <Link
               href="/messages"
               className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-stone-600 hover:bg-stone-100 hover:text-stone-950"

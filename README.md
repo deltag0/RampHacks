@@ -57,21 +57,24 @@ Google credentials belong in Supabase and Google Cloud, not in this repository.
 
 ## Interactive home tours
 
-Open `/tour-builder` and add at least two room images. Preview mode shows the
-navigation an exchange partner would use, with the scene list as an accessible
-alternative.
+Open **My homes** from the member dashboard and choose **Tour** for an owned
+home. Room images upload directly to private Storage. Saving replaces the
+scene-and-connection graph transactionally while preview mode shows the
+navigation an exchange partner will use.
 
-The builder is currently a session-only prototype: selected images use
-temporary browser object URLs and are not uploaded or persisted. Durable tour
-and private-image schema is defined in
-`supabase/migrations/20260718180000_create_interactive_home_tours.sql`.
+## Member listing workflow
+
+Authenticated members manage homes at `/dashboard/homes`. New homes begin as
+private drafts, photos upload directly to private Supabase Storage, and a home
+must have at least one photo before it can be published.
 
 ## Database migrations
 
-Apply the migrations under `supabase/migrations` in filename order. The member
-trust/history migration is already applied to the current hosted development
-project; private messaging and interactive-tour migrations remain pending until
-explicitly applied.
+Apply the migrations under `supabase/migrations` in filename order. The
+member, messaging, and interactive-tour migrations are applied to the current
+hosted development project. Apply
+`20260718190000_create_home_photos.sql` before using listing photos or saving
+tours through the application.
 
 ## Checks
 

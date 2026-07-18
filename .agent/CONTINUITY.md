@@ -2,6 +2,7 @@
 
 [PLANS]
 
+- 2026-07-18T17:47:48Z [USER] Implement a production-quality authenticated home listing flow with real photo uploads and durable interactive tours.
 - 2026-07-18T17:40:00Z [USER] Merge the validated `user-management` feature branch into the local `swapp` integration branch; user explicitly waived the no-mistakes pipeline after its pre-run failure.
 - 2026-07-18T17:30:23Z [USER] Merge the interactive home-tour feature into the `swapp` branch.
 - 2026-07-18T17:10:33Z [USER] Verify the tour feature against the updated Supabase schema and replace placeholder actions with correctly authorized database operations.
@@ -13,6 +14,8 @@
 
 [DECISIONS]
 
+- 2026-07-18T17:47:48Z [CODE] Home and tour images upload directly from authenticated browsers to separate private Supabase buckets; database metadata and RLS bind every object path to the owning member and home.
+- 2026-07-18T17:47:48Z [CODE] Homes begin as drafts and require a photo before publication; tour graph replacement is a single owner-authorized database transaction with client cleanup on failure.
 - 2026-07-18T17:10:33Z [CODE] Added a local, unapplied Supabase migration for tours rather than mutating the connected remote project; remote writes require an explicit dry-run workflow.
 - 2026-07-18T17:10:33Z [CODE] Tour rows reference existing `homes.id`; authorization derives from `homes.owner_member_id`, and image rows store private Storage paths rather than public or object URLs.
 - 2026-07-18T16:55:52Z [CODE] Implemented the first interactive-tour slice as a browser-session builder with directed scene connections and percentage-based hotspots; persistence and private object storage remain deferred until the home/upload backend exists.
@@ -27,6 +30,8 @@
 
 [PROGRESS]
 
+- 2026-07-18T17:47:48Z [CODE] Added authenticated create/edit/manage/publish home routes, validated photo uploads, owner dashboard navigation, and persisted tour loading/saving.
+- 2026-07-18T17:47:48Z [CODE] Added `home_photos`, private `home-images` Storage, publication enforcement, and transactional `replace_home_tour` in migration `20260718190000`.
 - 2026-07-18T17:40:00Z [TOOL] Began local `user-management` merge into `swapp`; conflicts preserve the established Supabase-backed discovery landing/styles while integrating auth-aware global navigation, user management, messaging, migrations, environment naming, and documentation.
 - 2026-07-18T17:30:23Z [TOOL] Merged commit `1fdd6ed` from `interactive-home-tour` into `swapp`; conflicts preserved the newer Supabase discovery/detail implementation while adding the tour route, graph model, styles, navigation, documentation, and local migration.
 - 2026-07-18T17:32:48Z [TOOL] Verified `origin/supabase-data-integration` is an ancestor of local `swapp` and pushed combined commit `e8d6a63` to `origin/swapp` without force-pushing or changing either feature branch.
@@ -48,6 +53,7 @@
 
 [DISCOVERIES]
 
+- 2026-07-18T17:47:48Z [TOOL] Vitest (14 tests), ESLint, strict TypeScript, Next.js production build, Prettier, and `git diff --check` passed; new hosted migration remains unapplied by design.
 - 2026-07-18T17:42:00Z [TOOL] Resolved `user-management` integration passes Prettier, ESLint, strict TypeScript, 11 Vitest assertions, Next.js production build, `git diff --check`, and runtime smoke tests for discovery, auth, protected dashboard/messages redirects, and tour builder.
 - 2026-07-18T17:42:00Z [CODE] The established discovery landing page and styles remain canonical; global navigation now resolves the Supabase session and exposes login/join or messages/dashboard actions accordingly.
 - 2026-07-18T17:30:23Z [TOOL] Resolved merge passed ESLint with two blob-image optimization warnings, TypeScript typecheck, and the Next.js production build; the warnings were then narrowly suppressed because session-only `blob:` URLs cannot use the Next.js image optimizer.
@@ -72,6 +78,7 @@
 
 [OUTCOMES]
 
+- 2026-07-18T17:47:48Z [CODE] Members can now create private home drafts, upload real photos, edit and publish eligible listings, and build durable owner-scoped interactive tours without routing image bytes through Next.js.
 - 2026-07-18T17:42:00Z [CODE] Local `swapp` now combines Supabase-backed discovery/details, interactive tour prototyping, authentication, member trust/history, and private exchange messaging; remote push and pending database migrations remain separate explicit actions.
 - 2026-07-18T17:30:23Z [CODE] The `swapp` tree now contains the interactive tour prototype and its unapplied Supabase persistence migration without regressing database-backed marketplace reads or home-detail behavior.
 - 2026-07-18T16:55:52Z [CODE] Members can now construct and preview a session-only interactive home tour without uploading images to a server; the UI includes non-hotspot scene navigation and image descriptions for accessibility.

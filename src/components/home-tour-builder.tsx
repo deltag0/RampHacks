@@ -12,6 +12,7 @@ import {
   Pencil,
   Plus,
   Trash2,
+  Save,
   X,
 } from "lucide-react";
 import {
@@ -43,14 +44,26 @@ type DraftConnection = {
   position: TourPoint;
 };
 
-export function HomeTourBuilder() {
-  const [tour, setTour] = useState<HomeTour>(emptyTour);
+import { createClient } from "@/lib/supabase/client";
+
+export function HomeTourBuilder({
+  homeId,
+  memberId,
+  initialTour = emptyTour,
+}: {
+  homeId: string;
+  memberId: string;
+  initialTour?: HomeTour;
+}) {
+  const [tour, setTour] = useState<HomeTour>(initialTour);
   const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
   const [mode, setMode] = useState<"edit" | "preview">("edit");
   const [connectionDraft, setConnectionDraft] =
     useState<DraftConnection | null>(null);
   const [announcement, setAnnouncement] = useState("");
   const objectUrls = useRef<string[]>([]);
+  const sceneFiles = useRef(new globalThis.Map<string, File>());
+  const [saving, setSaving] = useState(false);
 
   const activeScene = tour.scenes.find((scene) => scene.id === activeSceneId);
   const outgoingConnections = useMemo(
@@ -73,10 +86,12 @@ export function HomeTourBuilder() {
     if (files.length === 0) return;
 
     const newScenes = files.map((file) => {
+      const id = crypto.randomUUID();
       const imageUrl = URL.createObjectURL(file);
       objectUrls.current.push(imageUrl);
+      sceneFiles.current.set(id, file);
       return {
-        id: crypto.randomUUID(),
+        id,
         name: file.name.replace(/\.[^.]+$/, "") || "Untitled room",
         imageUrl,
         imageAlt: `View of ${file.name.replace(/\.[^.]+$/, "") || "a room"}`,
@@ -142,6 +157,7 @@ export function HomeTourBuilder() {
   function deleteActiveScene() {
     if (!activeSceneId || !activeScene) return;
     const nextTour = removeScene(tour, activeSceneId);
+    sceneFiles.current.delete(activeSceneId);
     setTour(nextTour);
     setActiveSceneId(nextTour.startSceneId);
     setConnectionDraft(null);
@@ -155,6 +171,112 @@ export function HomeTourBuilder() {
     setMode("preview");
   }
 
+  async function saveTour() {
+    if (!tour.startSceneId || tour.scenes.length === 0) return;
+    if (
+      !tour.title.trim() ||
+      tour.scenes.some((scene) => !scene.name.trim() || !scene.imageAlt.trim())
+    ) {
+      setAnnouncement("Add a tour title, room name, and image description.");
+      return;
+    }
+    setSaving(true);
+    const supabase = createClient();
+    const { data: previousScenes } = await supabase
+      .from("home_tours")
+      .select("home_tour_scenes(storage_path)")
+      .eq("home_id", homeId)
+      .maybeSingle();
+    const uploadedPaths: string[] = [];
+    const storedScenes: Array<{
+      id: string;
+      storagePath: string;
+      name: string;
+      imageAlt: string;
+      sortOrder: number;
+    }> = [];
+
+    for (const [sortOrder, scene] of tour.scenes.entries()) {
+      let storagePath = scene.storagePath;
+      const file = sceneFiles.current.get(scene.id);
+      if (file) {
+        const extension =
+          file.name.split(".").pop()?.toLowerCase() ||
+          (file.type === "image/jpeg" ? "jpg" : file.type.split("/")[1]);
+        storagePath = `${memberId}/${homeId}/${scene.id}.${extension}`;
+        const { error } = await supabase.storage
+          .from("home-tour-images")
+          .upload(storagePath, file, {
+            contentType: file.type,
+            cacheControl: "3600",
+            upsert: false,
+          });
+        if (error) {
+          if (uploadedPaths.length)
+            await supabase.storage
+              .from("home-tour-images")
+              .remove(uploadedPaths);
+          setSaving(false);
+          setAnnouncement("A scene failed to upload. Nothing was replaced.");
+          return;
+        }
+        uploadedPaths.push(storagePath);
+      }
+      if (!storagePath) continue;
+      storedScenes.push({
+        id: scene.id,
+        storagePath,
+        name: scene.name.trim(),
+        imageAlt: scene.imageAlt.trim(),
+        sortOrder,
+      });
+    }
+
+    const { error } = await supabase.rpc("replace_home_tour", {
+      target_home_id: homeId,
+      tour_title: tour.title.trim(),
+      start_scene: tour.startSceneId,
+      scenes: storedScenes,
+      connections: tour.connections.map((connection) => ({
+        id: connection.id,
+        fromSceneId: connection.fromSceneId,
+        toSceneId: connection.toSceneId,
+        label: connection.label,
+        positionX: connection.position.x,
+        positionY: connection.position.y,
+      })),
+    });
+    if (error) {
+      if (uploadedPaths.length)
+        await supabase.storage.from("home-tour-images").remove(uploadedPaths);
+      setSaving(false);
+      setAnnouncement(
+        "The tour could not be saved. Your existing tour is unchanged.",
+      );
+      return;
+    }
+
+    const retained = new Set(storedScenes.map((scene) => scene.storagePath));
+    const oldPaths =
+      previousScenes?.home_tour_scenes
+        ?.map((scene) => scene.storage_path)
+        .filter((path) => !retained.has(path)) ?? [];
+    if (oldPaths.length)
+      await supabase.storage.from("home-tour-images").remove(oldPaths);
+    setTour((current) => ({
+      ...current,
+      scenes: current.scenes.map((scene) => ({
+        ...scene,
+        storagePath:
+          storedScenes.find((stored) => stored.id === scene.id)?.storagePath ??
+          scene.storagePath,
+      })),
+    }));
+    sceneFiles.current.clear();
+    setSaving(false);
+    setAnnouncement("Tour saved securely.");
+  }
+
   if (tour.scenes.length === 0) {
     return (
       <div className="tour-empty">
@@ -165,7 +287,7 @@ export function HomeTourBuilder() {
         <h2>Turn room photos into a walk-through</h2>
         <p>
           Add two or more images, then place arrows that let members move from
-          one space to the next. Images stay in this browser session for now.
+          one space to the next. Images are saved privately to your home.
         </p>
         <label className="button tour-upload">
           <Plus size={18} aria-hidden="true" />
@@ -217,6 +339,15 @@ export function HomeTourBuilder() {
                   onChange={addImages}
                 />
               </label>
+              <button
+                className="tour-secondary-button"
+                type="button"
+                disabled={saving}
+                onClick={saveTour}
+              >
+                <Save size={17} />
+                {saving ? "Saving…" : "Save tour"}
+              </button>
               <button className="button" type="button" onClick={openPreview}>
                 <Eye size={17} />
                 Preview tour

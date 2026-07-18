@@ -76,3 +76,16 @@ finding the other home, entering it, and settling in. A member cannot confirm
 for their partner. When both confirmations exist, the database advances the
 exchange from `confirmed` to `in_progress` and records an audit event for each
 confirmation.
+
+## Home media and tours
+
+Homes begin as owner-only drafts. `home_photos` stores ordered metadata and
+private Storage paths; image bytes live in the private `home-images` bucket.
+Owners upload directly from the browser so media does not pass through the
+Next.js server. Bucket limits and Storage RLS repeat the client-side MIME, size,
+owner, and home checks.
+
+A home cannot be published without a photo. Interactive tour images use the
+separate private `home-tour-images` bucket. The `replace_home_tour` database
+function verifies ownership and replaces scenes and connections in one
+transaction; newly uploaded objects are removed if that transaction fails.
