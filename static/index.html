@@ -745,6 +745,93 @@
   .ranger-input input { min-width: 0; }
   footer { padding: 0 16px 28px; color: var(--ink-3); font-size: .72rem; text-align: center; }
 
+  /* ---------- Trail map (challenge roadmap) ---------- */
+  :root {
+    --map-bg: #efe3c4;
+    --map-bg-2: #e3d09e;
+    --map-ink: #5b4327;
+    --map-ink-2: #8a7250;
+    --map-line: #b99f6f;
+    --map-gold: #b8860b;
+    --map-path-todo: #c9b385;
+  }
+  .map-wrap {
+    position: relative;
+    max-width: 560px;
+    margin: 0 auto 14px;
+    overflow: hidden;
+    padding: 4px;
+    border: 1px solid var(--map-line);
+    border-radius: var(--radius);
+    background:
+      radial-gradient(ellipse at 18% 12%, rgba(255,255,255,.35), transparent 55%),
+      radial-gradient(circle at 88% 82%, rgba(139,110,60,.14), transparent 55%),
+      repeating-linear-gradient(0deg, rgba(139,110,60,.06) 0, rgba(139,110,60,.06) 1px, transparent 1px, transparent 24px),
+      repeating-linear-gradient(90deg, rgba(139,110,60,.06) 0, rgba(139,110,60,.06) 1px, transparent 1px, transparent 24px),
+      linear-gradient(160deg, var(--map-bg), var(--map-bg-2));
+    box-shadow: inset 0 0 50px rgba(91,67,39,.22), 0 1px 2px rgba(12,12,11,.05);
+  }
+  .map-inner { position: relative; width: 100%; }
+  .map-inner svg { display: block; width: 100%; height: auto; }
+  .map-node-btn {
+    position: absolute;
+    width: 46px;
+    height: 46px;
+    min-height: 46px;
+    padding: 0;
+    transform: translate(-50%, -50%);
+    border: 2.5px solid var(--map-ink);
+    border-radius: 50%;
+    background: var(--map-bg);
+    color: var(--map-ink);
+    box-shadow: 0 2px 6px rgba(91,67,39,.35);
+    font-size: .95rem;
+    font-weight: 800;
+  }
+  .map-node-btn:hover { background: var(--map-bg); transform: translate(-50%, -50%) scale(1.08); }
+  .map-node-btn.done { border-color: #8a6a1f; background: var(--map-gold); color: #fff8e6; }
+  .map-node-btn.current::after {
+    position: absolute;
+    inset: -7px;
+    border: 2px solid var(--map-gold);
+    border-radius: 50%;
+    content: "";
+    pointer-events: none;
+    animation: mapPulse 1.8s ease-out infinite;
+  }
+  .map-node-btn.selected { box-shadow: 0 0 0 3px var(--forest), 0 2px 6px rgba(91,67,39,.35); }
+  .map-node-btn.treasure { font-size: 1.15rem; }
+  @keyframes mapPulse {
+    0% { box-shadow: 0 0 0 0 rgba(184,134,11,.45); }
+    100% { box-shadow: 0 0 0 12px rgba(184,134,11,0); }
+  }
+  .map-node-label {
+    position: absolute;
+    max-width: 130px;
+    overflow: hidden;
+    padding: 2px 6px;
+    transform: translate(-50%, 4px);
+    border-radius: 6px;
+    background: rgba(239,228,200,.9);
+    color: var(--map-ink);
+    font-size: .66rem;
+    font-weight: 750;
+    pointer-events: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .map-legend {
+    position: absolute;
+    bottom: 10px;
+    left: 12px;
+    color: var(--map-ink-2);
+    font-size: .64rem;
+    font-weight: 700;
+    letter-spacing: .03em;
+  }
+  .map-compass { position: absolute; top: 10px; right: 12px; font-size: 1.15rem; opacity: .75; }
+  #challengeDetail { margin-bottom: 0; }
+
   @media (max-width: 640px) {
     header { padding-top: 20px; }
     .header-actions .label-copy { display: none; }
@@ -770,6 +857,8 @@
     .scrapbook-actions button { width: 100%; }
     .fallback-banner { align-items: flex-start; flex-direction: column; }
     .ranger-fab, .ranger-panel { z-index: 220; }
+    .map-wrap { max-width: 100%; }
+    .map-node-label { max-width: 105px; font-size: .61rem; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -865,7 +954,6 @@
       <button class="light" type="button" onclick="backToSetup()">End quest</button>
       <div class="score-info"><span class="score-label">Adventure score</span><span class="score-value"><span id="score">0</span> <small>pts</small></span></div>
     </div>
-
     <section id="storyStripCard" class="card story-strip hidden" aria-labelledby="stripTitle">
       <div class="strip-head"><h2 id="stripTitle">Story so far</h2><span class="strip-count" id="stripCount"></span></div>
       <div id="momentStrip" class="moment-strip"></div>
@@ -873,7 +961,12 @@
 
     <section class="card" aria-labelledby="huntTitle">
       <h2 id="huntTitle" class="hunt-title"></h2>
-      <div id="challenges"></div>
+      <div id="mapWrap" class="map-wrap" aria-label="Challenge trail map">
+        <div id="mapInner" class="map-inner"></div>
+        <span class="map-compass" aria-hidden="true">🧭</span>
+        <span class="map-legend" aria-hidden="true">✦ follow the trail to the next find</span>
+      </div>
+      <article id="challengeDetail" class="challenge hidden" aria-live="polite"></article>
     </section>
 
     <section id="questCompleteCard" class="card hidden" aria-label="Quest complete">
@@ -980,6 +1073,7 @@ let mode = "trail";
 let hunt = null;
 let score = 0;
 let activeIdx = null;
+let selectedIdx = null;
 let stream = null;
 let capturedPlace = "";
 let moments = [];
@@ -1185,6 +1279,7 @@ function resetAdventureData() {
   hunt = null;
   score = 0;
   activeIdx = null;
+  selectedIdx = null;
   moments = [];
   generatedStory = null;
   pendingMoment = null;
@@ -1192,7 +1287,9 @@ function resetAdventureData() {
   storyRequestInFlight = false;
   completionCounted = false;
   byId("score").textContent = "0";
-  byId("challenges").replaceChildren();
+  byId("mapInner").replaceChildren();
+  byId("challengeDetail").replaceChildren();
+  setHidden("challengeDetail", true);
   byId("momentStrip").replaceChildren();
   byId("reviewGrid").replaceChildren();
   byId("scrapbook").replaceChildren();
@@ -1216,8 +1313,6 @@ function renderHunt() {
   setHidden("scrapbook", true);
   setHidden("game", false);
   byId("huntTitle").textContent = hunt.hunt_title;
-  const list = byId("challenges");
-  list.replaceChildren();
   const challengeIds = new Set();
   hunt.challenges.forEach(function(challenge, index) {
     challenge.done = false;
@@ -1229,27 +1324,185 @@ function renderHunt() {
       idKey = String(replacementId);
     }
     challengeIds.add(idKey);
-    const card = node("article", "challenge");
-    card.id = "ch-" + index;
-    const body = node("div", "challenge-body");
-    const head = node("div", "challenge-head");
-    head.appendChild(node("h3", "", clampText(challenge.species_name || challenge.title, 90) || "Mystery Find"));
-    const rarityName = ["common", "uncommon", "rare", "epic"].includes(challenge.rarity) ? challenge.rarity : "common";
-    head.appendChild(node("span", "rarity rarity-" + rarityName, rarityName));
-    body.appendChild(head);
-    body.appendChild(node("p", "", clampText(challenge.clue, 220) || "Capture the discovery in one photo."));
-    if (challenge.location && challenge.location.name) {
-      body.appendChild(node("p", "location", "📍 Near " + clampText(challenge.location.name, 80)));
-    }
+  });
+  selectedIdx = 0;
+  renderMap();
+  selectNode(0);
+  scrollToElement(byId("game"));
+}
+
+/* ---------- trail map (challenge roadmap) ---------- */
+
+function trailNodePoints(n, width, topPad, spacing) {
+  const pts = [];
+  for (let i = 0; i < n; i++) {
+    pts.push({ x: 200 + 118 * Math.sin(i * 1.35 + 0.5), y: topPad + i * spacing });
+  }
+  return pts;
+}
+
+function smoothPathD(pts) {
+  if (pts.length < 2) return "";
+  let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] || pts[i];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[i + 2] || p2;
+    const cp1x = p1.x + (p2.x - p0.x) / 6, cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6, cp2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+  }
+  return d;
+}
+
+function createSvgNode(tag, attributes) {
+  const element = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  Object.keys(attributes || {}).forEach(function(name) {
+    element.setAttribute(name, String(attributes[name]));
+  });
+  return element;
+}
+
+function appendDecorativeXMarks(svgElement, width, height) {
+  const group = createSvgNode("g", {
+    opacity: "0.35",
+    stroke: "var(--map-ink-2)",
+    "stroke-width": "2",
+    "stroke-linecap": "round"
+  });
+  const marks = [[width * 0.14, height * 0.09], [width * 0.86, Math.min(height * 0.94, height - 30)]];
+  marks.forEach(function(mark) {
+    const x = mark[0];
+    const y = mark[1];
+    group.appendChild(createSvgNode("line", { x1: x - 7, y1: y - 7, x2: x + 7, y2: y + 7 }));
+    group.appendChild(createSvgNode("line", { x1: x - 7, y1: y + 7, x2: x + 7, y2: y - 7 }));
+  });
+  svgElement.appendChild(group);
+}
+
+function addTrailDots(svgEl, pathEl, nodePts) {
+  if (!pathEl) return;
+  const total = pathEl.getTotalLength();
+  if (!total) return;
+  for (let d = 0; d <= total; d += 16) {
+    const pt = pathEl.getPointAtLength(d);
+    if (nodePts.some(p => Math.hypot(p.x - pt.x, p.y - pt.y) < 22)) continue;
+    const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    dot.setAttribute("cx", pt.x.toFixed(1));
+    dot.setAttribute("cy", pt.y.toFixed(1));
+    dot.setAttribute("r", "2.2");
+    dot.setAttribute("fill", "var(--map-ink-2)");
+    dot.setAttribute("opacity", "0.55");
+    svgEl.appendChild(dot);
+  }
+}
+
+function renderMap() {
+  const n = hunt.challenges.length;
+  const width = 400, topPad = 60, spacing = 112, botPad = 60;
+  const height = topPad + botPad + Math.max(n - 1, 0) * spacing;
+  const pts = trailNodePoints(n, width, topPad, spacing);
+
+  let doneCount = 0;
+  while (doneCount < n && hunt.challenges[doneCount].done) doneCount++;
+  const dTodo = smoothPathD(pts);
+  const dDone = doneCount > 0 ? smoothPathD(pts.slice(0, Math.min(doneCount + (doneCount < n ? 1 : 0), n))) : "";
+
+  const mapInner = byId("mapInner");
+  mapInner.replaceChildren();
+  mapInner.style.aspectRatio = width + " / " + height;
+  const svgElement = createSvgNode("svg", {
+    viewBox: "0 0 " + width + " " + height,
+    role: "img",
+    "aria-label": "A winding trail connecting " + n + " challenge stops"
+  });
+  const todoPath = createSvgNode("path", {
+    id: "todoPath",
+    d: dTodo,
+    fill: "none",
+    stroke: "var(--map-path-todo)",
+    "stroke-width": "3",
+    "stroke-linecap": "round",
+    "stroke-dasharray": "1 10"
+  });
+  svgElement.appendChild(todoPath);
+  if (dDone) {
+    svgElement.appendChild(createSvgNode("path", {
+      id: "donePath",
+      d: dDone,
+      fill: "none",
+      stroke: "var(--map-gold)",
+      "stroke-width": "3.5",
+      "stroke-linecap": "round"
+    }));
+  }
+  appendDecorativeXMarks(svgElement, width, height);
+  addTrailDots(svgElement, todoPath, pts);
+  mapInner.appendChild(svgElement);
+
+  const frag = document.createDocumentFragment();
+  pts.forEach((p, i) => {
+    const c = hunt.challenges[i];
+    const isLast = i === n - 1;
+    const isCurrent = i === doneCount && !c.done;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "map-node-btn" + (c.done ? " done" : "") + (isCurrent ? " current" : "") + (isLast ? " treasure" : "") + (i === selectedIdx ? " selected" : "");
+    btn.style.left = (p.x / width * 100) + "%";
+    btn.style.top = (p.y / height * 100) + "%";
+    btn.textContent = c.done ? "✓" : (isLast ? "✕" : String(i + 1));
+    const challengeTitle = clampText(c.species_name || c.title, 100) || ("Challenge " + (i + 1));
+    btn.title = challengeTitle;
+    btn.setAttribute("aria-label", "View challenge " + (i + 1) + ": " + challengeTitle);
+    btn.setAttribute("aria-pressed", String(i === selectedIdx));
+    if (isCurrent) btn.setAttribute("aria-current", "step");
+    btn.addEventListener("click", function() { selectNode(i); });
+    frag.appendChild(btn);
+
+    const label = document.createElement("span");
+    label.className = "map-node-label";
+    label.style.left = (p.x / width * 100) + "%";
+    label.style.top = (p.y / height * 100) + "%";
+    label.textContent = challengeTitle;
+    frag.appendChild(label);
+  });
+  mapInner.appendChild(frag);
+}
+
+function selectNode(i) {
+  if (!hunt || !Number.isInteger(i) || i < 0 || i >= hunt.challenges.length) return;
+  selectedIdx = i;
+  document.querySelectorAll(".map-node-btn").forEach(function(button, index) {
+    const isSelected = index === i;
+    button.classList.toggle("selected", isSelected);
+    button.setAttribute("aria-pressed", String(isSelected));
+  });
+  const challenge = hunt.challenges[i];
+  const rarityValue = String(challenge.rarity || "common").toLowerCase();
+  const rarity = ["common", "uncommon", "rare", "epic"].includes(rarityValue) ? rarityValue : "common";
+  const detail = byId("challengeDetail");
+  detail.className = "challenge" + (challenge.done ? " done" : "");
+  detail.replaceChildren();
+
+  const body = node("div", "challenge-body");
+  const heading = node("div", "challenge-head");
+  heading.appendChild(node("h3", "", clampText(challenge.species_name || challenge.title, 100) || ("Challenge " + (i + 1))));
+  heading.appendChild(node("span", "rarity rarity-" + rarity, rarity));
+  body.appendChild(heading);
+  body.appendChild(node("p", "", clampText(challenge.clue, 220) || "Capture this find."));
+  const locationName = challenge.location ? clampText(challenge.location.name, 90) : "";
+  if (locationName) body.appendChild(node("p", "location", "📍 Near " + locationName));
+  if (challenge.done) {
+    body.appendChild(node("span", "completed-label", "✓ Completed"));
+  } else {
     const attempt = node("button", "attempt-btn", "Attempt");
     attempt.type = "button";
-    attempt.addEventListener("click", function() { openCam(index); });
+    attempt.addEventListener("click", function() { openCam(i); });
     body.appendChild(attempt);
-    card.appendChild(body);
-    card.appendChild(node("span", "points", String(Number(challenge.points) || 0) + " pts"));
-    list.appendChild(card);
-  });
-  scrollToElement(byId("game"));
+  }
+  detail.appendChild(body);
+  detail.appendChild(node("span", "points", String(Number(challenge.points) || 0) + " pts"));
 }
 
 async function openCam(index) {
@@ -1400,10 +1653,9 @@ function markDone(index) {
   score += Number(challenge.points) || 0;
   byId("score").textContent = String(score);
   addXP(Number(challenge.points) || 0);
-  const card = byId("ch-" + index);
-  card.classList.add("done");
-  const attempt = card.querySelector(".attempt-btn");
-  if (attempt) attempt.replaceWith(node("span", "completed-label", "✓ Completed"));
+  renderMap();
+  const nextIndex = hunt.challenges.findIndex(function(item) { return !item.done; });
+  selectNode(nextIndex === -1 ? index : nextIndex);
 }
 
 function contributorNames(current) {
