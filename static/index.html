@@ -5,101 +5,246 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>TrailQuest — AI Scavenger Hunts for Any Trail</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
   :root {
-    --green: #2f7d4f; --green-dark: #1f5637; --sand: #f4efe6;
-    --ink: #1c2419; --gold: #e0a458; --card: #ffffff;
+    --bg: #fafaf9;
+    --surface: #ffffff;
+    --border: #e7e5e4;
+    --border-strong: #d6d3d1;
+    --ink: #0c0c0b;
+    --ink-2: #55534d;
+    --ink-3: #96938a;
+    --accent: #d7f13a;
+    --accent-ink: #1f2404;
+    --success-bg: #eefaf0; --success-ink: #166534; --success-border: #bbe8c4;
+    --error-bg: #fef2f2;   --error-ink: #b91c1c;   --error-border: #fbd5d5;
+    --warn-bg: #fefbea;    --warn-ink: #92650a;    --warn-border: #f5e6ab;
+    --radius: 12px;
+    --radius-sm: 8px;
   }
   * { box-sizing: border-box; }
   body {
-    margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: linear-gradient(160deg, #dff1e3 0%, #f4efe6 100%);
-    color: var(--ink); min-height: 100vh;
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
   }
-  header {
-    text-align: center; padding: 28px 16px 12px;
+
+  /* header */
+  header { padding: 32px 16px 8px; }
+  .brand { max-width: 720px; margin: 0 auto; display: flex; align-items: center; gap: 10px; }
+  .brand .mark {
+    width: 30px; height: 30px; border-radius: 8px; background: var(--ink);
+    position: relative; flex-shrink: 0;
   }
-  header h1 { margin: 0; font-size: 2.1rem; color: var(--green-dark); letter-spacing: -0.5px; }
-  header p { margin: 6px 0 0; color: #56604f; }
-  .wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
+  .brand .mark::after {
+    content: ""; position: absolute; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent); top: 6px; left: 6px;
+  }
+  .brand h1 { margin: 0; font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; }
+  .eyebrow {
+    max-width: 720px; margin: 14px auto 2px; font-size: .72rem; font-weight: 600;
+    letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3);
+  }
+  .tagline { max-width: 720px; margin: 4px auto 0; color: var(--ink-2); font-size: .95rem; }
+
+  .wrap { max-width: 720px; margin: 0 auto; padding: 20px 16px 40px; }
+
   .card {
-    background: var(--card); border-radius: 16px; padding: 20px;
-    box-shadow: 0 8px 24px rgba(31,86,55,0.10); margin-bottom: 18px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px; margin-bottom: 16px;
+    box-shadow: 0 1px 2px rgba(12,12,11,0.03);
   }
+
   .row { display: flex; gap: 10px; flex-wrap: wrap; }
   input[type=text] {
-    flex: 1; min-width: 200px; padding: 12px 14px; border: 1px solid #cdd6c8;
-    border-radius: 10px; font-size: 1rem;
+    flex: 1; min-width: 200px; padding: 12px 14px; border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm); font-size: .95rem; font-family: inherit;
+    background: var(--surface); color: var(--ink);
   }
+  input[type=text]:focus { outline: 2px solid var(--ink); outline-offset: -1px; }
+  input[type=text]::placeholder { color: var(--ink-3); }
+
   button {
-    background: var(--green); color: #fff; border: none; padding: 12px 18px;
-    border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer;
-    transition: transform .05s ease, background .2s;
+    background: var(--ink); color: #fff; border: none; padding: 12px 18px;
+    border-radius: var(--radius-sm); font-size: .92rem; font-weight: 600; cursor: pointer;
+    font-family: inherit; transition: background .15s ease, transform .05s ease;
   }
-  button:hover { background: var(--green-dark); }
+  button:hover { background: #2a2a27; }
   button:active { transform: scale(0.98); }
-  button.ghost { background: transparent; color: var(--green-dark); border: 1px solid var(--green); }
+  button.ghost {
+    background: transparent; color: var(--ink); border: 1px solid var(--border-strong);
+  }
+  button.ghost:hover { background: #f4f3f1; }
   button:disabled { opacity: .5; cursor: not-allowed; }
-  .modes { display: flex; gap: 8px; margin-bottom: 12px; }
-  .chip { padding: 8px 14px; border-radius: 999px; border: 1px solid #cdd6c8;
-    background: #fff; cursor: pointer; font-weight: 600; color: #56604f; }
-  .chip.active { background: var(--green); color: #fff; border-color: var(--green); }
-  .scorebar { display: flex; justify-content: space-between; align-items: center;
-    background: var(--green-dark); color: #fff; border-radius: 12px; padding: 12px 18px; margin-bottom: 16px; }
-  .scorebar .score { font-size: 1.4rem; font-weight: 700; }
-  .hunt-title { font-size: 1.5rem; color: var(--green-dark); margin: 4px 0 14px; }
-  .challenge { border: 1px solid #e4e9df; border-radius: 12px; padding: 14px; margin-bottom: 12px;
-    display: flex; gap: 12px; align-items: flex-start; }
-  .challenge.done { background: #eef7ee; border-color: #bfe0c2; }
-  .challenge .pts { background: var(--gold); color: #4a2f10; font-weight: 700;
-    border-radius: 8px; padding: 4px 8px; font-size: .85rem; white-space: nowrap; }
+
+  /* segmented mode control */
+  .modes {
+    display: flex; gap: 4px; padding: 4px; background: #f2f1ee;
+    border-radius: var(--radius-sm); margin-bottom: 14px; width: fit-content;
+  }
+  .chip {
+    padding: 7px 14px; border-radius: 7px; border: none; background: transparent;
+    cursor: pointer; font-weight: 600; font-size: .85rem; color: var(--ink-2);
+    font-family: inherit; transition: all .15s ease;
+  }
+  .chip.active { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(12,12,11,0.08); }
+
+  .scorebar {
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--ink); color: #fff; border-radius: var(--radius); padding: 14px 18px;
+    margin-bottom: 16px;
+  }
+  .scorebar .label { font-size: .78rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #b3b2ac; }
+  .scorebar .score { font-size: 1.25rem; font-weight: 700; }
+  .scorebar .score .pts-unit { color: var(--accent); font-weight: 700; }
+
+  .hunt-title { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.01em; margin: 2px 0 14px; }
+
+  .challenge {
+    border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px;
+    margin-bottom: 10px; display: flex; gap: 12px; align-items: flex-start;
+  }
+  .challenge.done { background: var(--success-bg); border-color: var(--success-border); }
+  .challenge .pts {
+    background: var(--accent); color: var(--accent-ink); font-weight: 700;
+    border-radius: 6px; padding: 4px 9px; font-size: .78rem; white-space: nowrap;
+  }
   .challenge .body { flex: 1; }
-  .challenge .body h3 { margin: 0 0 4px; font-size: 1.05rem; }
-  .challenge .body p { margin: 0 0 8px; color: #56604f; font-size: .92rem; }
-  .challenge.done .check { color: var(--green); font-weight: 700; }
-  video, canvas { width: 100%; border-radius: 12px; background: #000; }
+  .challenge .body h3 { margin: 0 0 4px; font-size: 1rem; font-weight: 600; }
+  .challenge .body p { margin: 0 0 10px; color: var(--ink-2); font-size: .88rem; line-height: 1.4; }
+  .challenge.done .check { color: var(--success-ink); font-weight: 600; font-size: .88rem; }
+
+  video, canvas { width: 100%; border-radius: var(--radius-sm); background: #000; }
   .cam-actions { display: flex; gap: 10px; margin-top: 10px; }
-  .status { margin-top: 10px; padding: 10px 12px; border-radius: 10px; font-size: .92rem; }
-  .status.ok { background: #e6f5e9; color: #1f5637; }
-  .status.no { background: #fdecec; color: #a3352f; }
-  .status.busy { background: #fff6e5; color: #8a5a12; }
+
+  .status {
+    margin-top: 10px; padding: 10px 12px; border-radius: var(--radius-sm);
+    font-size: .88rem; border: 1px solid transparent; font-weight: 500;
+  }
+  .status.ok   { background: var(--success-bg); color: var(--success-ink); border-color: var(--success-border); }
+  .status.no   { background: var(--error-bg);   color: var(--error-ink);   border-color: var(--error-border); }
+  .status.busy { background: var(--warn-bg);    color: var(--warn-ink);    border-color: var(--warn-border); }
+
   .hidden { display: none; }
-  .recap { background: linear-gradient(160deg, var(--green-dark), var(--green));
-    color: #fff; border-radius: 16px; padding: 24px; text-align: center; }
-  .recap h2 { margin: 0 0 10px; }
-  .recap p { font-size: 1.1rem; line-height: 1.5; }
-  .spinner { display:inline-block; width:16px; height:16px; border:3px solid rgba(255,255,255,.4);
-    border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; vertical-align:-3px; }
+
+  .recap {
+    background: var(--ink); color: #fff; border-radius: var(--radius);
+    padding: 28px 24px; text-align: center;
+  }
+  .recap .badge {
+    display: inline-block; background: var(--accent); color: var(--accent-ink);
+    font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    padding: 5px 12px; border-radius: 999px; margin-bottom: 12px;
+  }
+  .recap h2 { margin: 0 0 12px; font-size: 1.3rem; font-weight: 700; }
+  .recap p { font-size: 1rem; line-height: 1.55; color: #d9d8d3; }
+  .recap button.ghost { color: #fff; border-color: #4a4a45; margin-top: 14px; }
+  .recap button.ghost:hover { background: #1e1e1b; }
+
+  .spinner {
+    display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.35);
+    border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: -2px;
+  }
   @keyframes spin { to { transform: rotate(360deg); } }
-  footer { text-align:center; color:#7a8473; font-size:.85rem; padding: 8px 0 30px; }
+
+  /* rank / XP bar */
+  .rankbar {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 18px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(12,12,11,0.03);
+  }
+  .rankbar .lvl {
+    width: 46px; height: 46px; border-radius: 10px; background: var(--ink); color: var(--accent);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-weight: 800; line-height: 1; flex-shrink: 0;
+  }
+  .rankbar .lvl small { font-size: .5rem; color: #b3b2ac; letter-spacing: .1em; margin-bottom: 3px; }
+  .rankbar .lvl span { font-size: 1.1rem; }
+  .rankbar .rk { flex: 1; }
+  .rankbar .rk-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 7px; }
+  .rankbar .rk-name { font-weight: 700; font-size: .95rem; letter-spacing: -0.01em; }
+  .rankbar .rk-xp { font-size: .76rem; color: var(--ink-3); font-weight: 600; }
+  .xp-track { height: 8px; background: #ececea; border-radius: 999px; overflow: hidden; }
+  .xp-fill { height: 100%; background: var(--accent); border-radius: 999px; width: 0%;
+    transition: width .6s cubic-bezier(.2,.8,.2,1); }
+
+  /* level-up toast */
+  .toast {
+    position: fixed; left: 50%; top: 24px; transform: translateX(-50%) translateY(-160%);
+    background: var(--ink); color: #fff; padding: 14px 22px; border-radius: 999px;
+    display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: .95rem;
+    box-shadow: 0 12px 34px rgba(0,0,0,.28); z-index: 100; opacity: 0;
+    transition: transform .5s cubic-bezier(.2,.8,.2,1), opacity .4s ease;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast .tstar { color: var(--accent); font-size: 1.2rem; }
+
+  /* floating +XP */
+  .xp-pop {
+    position: fixed; z-index: 90; font-weight: 800; color: var(--accent-ink);
+    background: var(--accent); padding: 4px 10px; border-radius: 999px; font-size: .78rem;
+    pointer-events: none; animation: floatUp 1s ease forwards;
+  }
+  @keyframes floatUp {
+    0%   { opacity: 0; transform: translateY(6px) scale(.9); }
+    15%  { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-36px) scale(1); }
+  }
+
+  footer { text-align: center; color: var(--ink-3); font-size: .78rem; padding: 8px 0 30px; }
+  footer .dot { margin: 0 6px; }
 </style>
 </head>
 <body>
 <header>
-  <h1>🌲 TrailQuest</h1>
-  <p>Turn any trail into an AI-powered adventure game.</p>
+  <div class="brand">
+    <div class="mark"></div>
+    <h1>TrailQuest</h1>
+  </div>
+  <div class="eyebrow">RampHacks · AI Scavenger Hunt</div>
+  <p class="tagline">Turn any trail into an AI-powered adventure game.</p>
 </header>
 
 <div class="wrap">
+  <!-- RANK / XP -->
+  <div class="rankbar" id="rankbar">
+    <div class="lvl"><small>LVL</small><span id="rankLevel">1</span></div>
+    <div class="rk">
+      <div class="rk-top">
+        <span class="rk-name" id="rankName">Sapling</span>
+        <span class="rk-xp" id="rankXp">0 / 50 XP</span>
+      </div>
+      <div class="xp-track"><div class="xp-fill" id="xpFill"></div></div>
+    </div>
+  </div>
+
   <!-- SETUP -->
   <div id="setup" class="card">
     <div class="modes">
-      <div class="chip active" data-mode="trail" onclick="setMode('trail')">🥾 Trail</div>
-      <div class="chip" data-mode="venue" onclick="setMode('venue')">🏢 Venue (indoor demo)</div>
+      <button class="chip active" data-mode="trail" onclick="setMode('trail')">Trail</button>
+      <button class="chip" data-mode="venue" onclick="setMode('venue')">Venue (indoor demo)</button>
     </div>
     <div class="row">
       <input id="place" type="text" placeholder="Paste an AllTrails link or trail name…" />
       <button id="genBtn" onclick="generateHunt()">Generate Quest</button>
     </div>
-    <p id="setupHint" style="color:#7a8473;font-size:.85rem;margin:10px 0 0;">
-      Tip: use <b>Venue</b> mode to let judges play live indoors with a webcam.
+    <p id="setupHint" style="color:var(--ink-3);font-size:.82rem;margin:12px 0 0;">
+      Tip: use <strong>Venue</strong> mode to let judges play live indoors with a webcam.
     </p>
   </div>
 
   <!-- GAME -->
   <div id="game" class="hidden">
     <div class="scorebar">
-      <span>Adventure Score</span>
-      <span class="score"><span id="score">0</span> pts</span>
+      <button class="ghost" style="color:#fff;border-color:#4a4a45;padding:8px 14px;" onclick="backToSetup()">← Back</button>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
+        <span class="label">Adventure Score</span>
+        <span class="score"><span id="score">0</span> <span class="pts-unit">pts</span></span>
+      </div>
     </div>
     <div class="card">
       <div id="huntTitle" class="hunt-title"></div>
@@ -108,11 +253,11 @@
 
     <!-- CAMERA -->
     <div id="camCard" class="card hidden">
-      <div id="activeClue" style="font-weight:600;margin-bottom:10px;"></div>
+      <div id="activeClue" style="font-weight:600;margin-bottom:10px;font-size:.92rem;"></div>
       <video id="video" autoplay playsinline></video>
       <canvas id="canvas" class="hidden"></canvas>
       <div class="cam-actions">
-        <button id="snapBtn" onclick="snap()">📸 Capture & Verify</button>
+        <button id="snapBtn" onclick="snap()">Capture &amp; Verify</button>
         <button class="ghost" onclick="closeCam()">Cancel</button>
       </div>
       <div id="status" class="status hidden"></div>
@@ -121,13 +266,16 @@
 
   <!-- RECAP -->
   <div id="recapCard" class="recap hidden">
-    <h2>🏆 Quest Complete!</h2>
+    <span class="badge">Quest Complete</span>
+    <h2>Nice work out there.</h2>
     <p id="recapText"></p>
-    <button class="ghost" style="color:#fff;border-color:#fff;margin-top:8px;" onclick="location.reload()">New Adventure</button>
+    <button class="ghost" onclick="location.reload()">New Adventure</button>
   </div>
 </div>
 
-<footer>Built at RampHacks · Powered by OpenAI vision + generation</footer>
+<div class="toast" id="toast"><span class="tstar">★</span><span id="toastText"></span></div>
+
+<footer>Built at RampHacks <span class="dot">·</span> Powered by OpenAI vision + generation</footer>
 
 <script>
 let mode = "trail";
@@ -181,7 +329,7 @@ function renderHunt() {
       <div class="body">
         <h3>${c.title}</h3>
         <p>${c.clue}</p>
-        <button onclick="openCam(${i})">📷 Attempt</button>
+        <button onclick="openCam(${i})">Attempt</button>
       </div>
       <span class="pts">${c.points} pts</span>`;
     list.appendChild(el);
@@ -190,7 +338,7 @@ function renderHunt() {
 
 async function openCam(i) {
   activeIdx = i;
-  document.getElementById("activeClue").textContent = "🎯 " + hunt.challenges[i].clue;
+  document.getElementById("activeClue").textContent = "Clue: " + hunt.challenges[i].clue;
   document.getElementById("camCard").classList.remove("hidden");
   document.getElementById("status").className = "status hidden";
   document.getElementById("camCard").scrollIntoView({behavior:"smooth"});
@@ -207,6 +355,20 @@ async function openCam(i) {
 function closeCam() {
   document.getElementById("camCard").classList.add("hidden");
   activeIdx = null;
+}
+
+function backToSetup() {
+  closeCam();
+  if (stream) {
+    stream.getTracks().forEach(t => t.stop());
+    stream = null;
+  }
+  hunt = null;
+  score = 0;
+  document.getElementById("score").textContent = "0";
+  document.getElementById("game").classList.add("hidden");
+  document.getElementById("recapCard").classList.add("hidden");
+  document.getElementById("setup").classList.remove("hidden");
 }
 
 async function snap() {
@@ -229,12 +391,12 @@ async function snap() {
     const r = await res.json();
     if (r.match) {
       status.className = "status ok";
-      status.textContent = "✅ " + (r.reason || "Nice find!");
+      status.textContent = (r.reason || "Nice find!");
       markDone(activeIdx);
       setTimeout(closeCam, 1200);
     } else {
       status.className = "status no";
-      status.textContent = "❌ " + (r.reason || "Not quite — try again!");
+      status.textContent = (r.reason || "Not quite — try again!");
     }
   } catch (e) {
     status.className = "status no";
@@ -250,7 +412,7 @@ function markDone(i) {
   document.getElementById("score").textContent = score;
   const el = document.getElementById("ch-" + i);
   el.classList.add("done");
-  el.querySelector("button").outerHTML = '<span class="check">✔ Completed</span>';
+  el.querySelector("button").outerHTML = '<span class="check">Completed</span>';
   if (hunt.challenges.every(x => x.done)) finish();
 }
 
