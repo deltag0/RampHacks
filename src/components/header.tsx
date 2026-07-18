@@ -14,7 +14,7 @@ export async function Header({ solid = false }: { solid?: boolean }) {
           <span className="brand-mark">S</span> swapp
         </Link>
         <nav aria-label="Main navigation">
-          <Link href="/search">Find a home</Link>
+          <Link href="/search">Search</Link>
           <Link href="/tour-builder">Build a tour</Link>
           <Link href="/#how-it-works">How it works</Link>
           <a href="#">Trust &amp; safety</a>

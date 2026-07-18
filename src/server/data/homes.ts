@@ -11,6 +11,11 @@ export type Home = {
   amenities: string[];
   accessibility: string[];
   rules: string[];
+  photos: {
+    id: string;
+    url: string;
+    alt: string;
+  }[];
   availability: {
     startsOn: string;
     endsOn: string;
@@ -34,6 +39,13 @@ const supabaseHomeSchema = z.object({
       minimum_nights: z.number().int().positive(),
     }),
   ),
+  home_photos: z.array(
+    z.object({
+      id: z.string().uuid(),
+      alt_text: z.string(),
+      sort_order: z.number().int().nonnegative(),
+    }),
+  ),
   regions: z
     .object({
       name: z.string(),
@@ -53,6 +65,7 @@ const HOME_SELECT = [
   "amenities",
   "accessibility_features",
   "house_rules",
+  "home_photos(id,alt_text,sort_order)",
   "home_availability(starts_on,ends_on,minimum_nights)",
   "regions(name,country_code)",
 ].join(",");
@@ -111,6 +124,13 @@ async function fetchHomes(path: string): Promise<Home[]> {
     amenities: home.amenities,
     accessibility: home.accessibility_features,
     rules: home.house_rules,
+    photos: [...home.home_photos]
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .map((photo) => ({
+        id: photo.id,
+        url: `/api/home-images/${photo.id}`,
+        alt: photo.alt_text,
+      })),
     availability: home.home_availability.map((window) => ({
       startsOn: window.starts_on,
       endsOn: window.ends_on,

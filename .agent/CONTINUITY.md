@@ -2,6 +2,7 @@
 
 [PLANS]
 
+- 2026-07-18T18:26:36Z [USER] Commit and push the generated demo-home image integration to `origin/swapp`.
 - 2026-07-18T18:08:57Z [USER] Merge the validated OpenAI-generated suggestion feature into `swapp` and push it to the remote branch.
 - 2026-07-18T18:10:00Z [USER] Explicitly waived the no-mistakes gate and requested a direct push of the validated commit to `origin/swapp`.
 - 2026-07-18T18:08:00Z [USER] Commit, validate through no-mistakes, and push the Kelvin showcase and date-filtering changes to `origin/swapp`.
@@ -20,6 +21,7 @@
 
 [DECISIONS]
 
+- 2026-07-18T18:26:36Z [CODE] Demo images remain bundled local assets until an authenticated active Kelvin explicitly imports them; the importer writes to the private `home-images` bucket and rolls back an uploaded object if photo metadata insertion fails.
 - 2026-07-18T17:53:31Z [CODE] Showcase data is an idempotent local/disposable-development seed that resolves exactly one active Kelvin by display name; it uses deterministic fictional region/home IDs and never embeds Kelvin's account ID.
 - 2026-07-18T17:53:31Z [CODE] Date search requires every supplied boundary to fall inside one home availability window; the shared pure filter is used by both the browser experience and homes API.
 - 2026-07-18T18:00:49Z [CODE] AI suggestions are authenticated, reload published home data server-side, send only verified approximate listing/filter facts with `store: false`, and fall back deterministically on missing credentials, refusals, invalid output, timeouts, or API errors.
@@ -41,6 +43,8 @@
 
 [PROGRESS]
 
+- 2026-07-18T18:26:36Z [CODE] Added five generated demo-home images, a Kelvin-only authenticated importer, private image proxying, and photo rendering on discovery cards and home details.
+- 2026-07-18T18:20:00Z [CODE] Renamed the primary `/search` navigation link from “Find a home” to the clearer “Search” label.
 - 2026-07-18T18:08:57Z [TOOL] Rebased AI suggestions onto current `swapp`, preserved both sides of the continuity log conflict, fast-forwarded local `swapp` to `16ee491`, completed a push dry run, and pushed the feature commit to `origin/swapp`.
 - 2026-07-18T18:02:00Z [TOOL] Ran the remote migration plus seed in a transaction that was rolled back, confirmed the dry run produced 6 homes and 8 windows, then applied `create_home_availability` and the idempotent seed to the connected hosted development project.
 - 2026-07-18T17:53:31Z [CODE] Added local availability schema/RLS, six fictional homes across Portugal, Japan, Canada, South Africa, Denmark, and Argentina, eight varied windows, shared date-aware filtering, detail-page availability display, regression tests, and README guidance.
@@ -69,6 +73,7 @@
 
 [DISCOVERIES]
 
+- 2026-07-18T18:26:36Z [TOOL] Vitest (20 assertions), ESLint, strict TypeScript, Prettier, production build, whitespace checks, and unauthenticated runtime smoke tests passed; hosted Storage remains unchanged until Kelvin runs the importer.
 - 2026-07-18T18:08:57Z [TOOL] The no-mistakes v1.31.2 gate could not create a run for either fresh feature branch (`no previous run for branch`), and its internal mirror rejected the rebased original branch non-fast-forward; manual Prettier, ESLint, strict TypeScript, 20 Vitest assertions, webpack production build, and whitespace checks passed.
 - 2026-07-18T18:02:00Z [TOOL] Post-write SQL verification confirmed all six published homes belong to Kelvin and span AR, CA, DK, JP, PT, and ZA; application REST smoke tests returned 6 homes/8 windows and the combined South Africa/date/capacity/Villa/Pool filter returned exactly the fictional Cape Town villa.
 - 2026-07-18T17:53:31Z [TOOL] Read-only inspection confirmed exactly one active member named Kelvin and no regions/homes in the connected development project; no remote data or schema was changed.
@@ -100,6 +105,7 @@
 
 [OUTCOMES]
 
+- 2026-07-18T18:26:36Z [CODE] Demo-home imagery is ready to ship and can be safely imported from `/dashboard/demo-images`; five homes have generated assets while Bariloche intentionally retains the existing no-photo state.
 - 2026-07-18T18:08:57Z [TOOL] `origin/swapp` now contains the secure AI-generated suggestion feature at commit `16ee491`; no force push, Supabase mutation, or OpenAI API call was performed during delivery.
 - 2026-07-18T18:02:00Z [TOOL] SUPERSEDES the unapplied portion of the 2026-07-18T17:53:31Z outcome: availability schema, six Kelvin homes, and eight windows are now live in the connected hosted development project; generated photo objects and the separate photo migration remain unapplied.
 - 2026-07-18T17:53:31Z [CODE] Local code now supports an idempotent Kelvin showcase dataset and genuine date filtering; applying migrations/seed and adding generated photo objects remain intentionally unapplied pending a safe local database command and successful/approved image generation.

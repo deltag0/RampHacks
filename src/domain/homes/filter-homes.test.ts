@@ -17,6 +17,7 @@ const homes: Home[] = [
     amenities: ["Workspace", "Washer"],
     accessibility: [],
     rules: [],
+    photos: [],
     availability: [
       { startsOn: "2026-09-05", endsOn: "2026-09-26", minimumNights: 5 },
     ],
@@ -31,6 +32,7 @@ const homes: Home[] = [
     amenities: ["Pool", "Workspace"],
     accessibility: ["Step-free main floor"],
     rules: [],
+    photos: [],
     availability: [
       { startsOn: "2027-02-01", endsOn: "2027-03-15", minimumNights: 10 },
     ],

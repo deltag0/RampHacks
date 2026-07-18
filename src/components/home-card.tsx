@@ -17,7 +17,17 @@ export function HomeCard({ home, suggestionSearch }: HomeCardProps) {
     <article className="home-card">
       <div className="home-image-wrap">
         <Link href={`/homes/${home.id}`} aria-label={`View ${home.title}`}>
-          <span className="home-image-placeholder">Photos coming soon</span>
+          {home.photos[0] ? (
+            // The application image proxy enforces Storage RLS before streaming.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={home.photos[0].url}
+              alt={home.photos[0].alt}
+              className="home-image"
+            />
+          ) : (
+            <span className="home-image-placeholder">Photos coming soon</span>
+          )}
         </Link>
         <button
           type="button"

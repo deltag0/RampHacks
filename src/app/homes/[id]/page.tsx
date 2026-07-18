@@ -61,9 +61,19 @@ export default async function HomeDetailPage({ params }: HomeDetailPageProps) {
           </div>
         </div>
 
-        <div className="detail-gallery detail-gallery-empty">
-          <span>Photos have not been added for this home yet.</span>
-        </div>
+        {home.photos.length ? (
+          <div className="detail-gallery">
+            {home.photos.slice(0, 5).map((photo) => (
+              // The application image proxy enforces Storage RLS before streaming.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img key={photo.id} src={photo.url} alt={photo.alt} />
+            ))}
+          </div>
+        ) : (
+          <div className="detail-gallery detail-gallery-empty">
+            <span>Photos have not been added for this home yet.</span>
+          </div>
+        )}
 
         <div className="detail-layout">
           <div className="detail-content">
